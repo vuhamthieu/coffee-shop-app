@@ -1,138 +1,136 @@
 CREATE TABLE Roles (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    role_name TEXT NOT NULL UNIQUE      -- Admin, Cashier, Staff
-);
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    role_name VARCHAR(50) NOT NULL UNIQUE  -- Admin, Cashier, Staff
+) ENGINE=InnoDB;
 
 CREATE TABLE Employees (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    employee_name TEXT NOT NULL,
-    phone TEXT,
-    username TEXT UNIQUE NOT NULL,
-    employee_password TEXT NOT NULL,
-    role_id INTEGER NOT NULL,
-    active INTEGER DEFAULT 1,
-    FOREIGN KEY(role_id) REFERENCES Roles(id) ON DELETE CASCADE
-);
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    employee_name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20),
+    username VARCHAR(50) NOT NULL UNIQUE,
+    employee_password VARCHAR(255) NOT NULL,
+    role_id INT NOT NULL,
+    active TINYINT(1) DEFAULT 1,
+    FOREIGN KEY (role_id) REFERENCES Roles(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
 -- FaceID: lưu embedding khuôn mặt
 CREATE TABLE FaceData (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    employee_id INTEGER NOT NULL,
-    embedding BLOB NOT NULL,           -- vector 128 hoặc 512 chiều
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT NOT NULL,
+    embedding LONGBLOB NOT NULL,           -- vector 128 hoặc 512 chiều
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(employee_id) REFERENCES Employees(id) ON DELETE CASCADE
-);
+    FOREIGN KEY (employee_id) REFERENCES Employees(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
 CREATE TABLE Categories (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    category_name TEXT NOT NULL
-);
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    category_name VARCHAR(100) NOT NULL
+) ENGINE=InnoDB;
 
 CREATE TABLE Products (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    product_name TEXT NOT NULL,
-    category_id INTEGER NOT NULL,
-    price REAL NOT NULL,
-    product_image TEXT,
-    available INTEGER DEFAULT 1,        -- 1 = còn, 0 = hết
-    FOREIGN KEY(category_id) REFERENCES Categories(id)
-);
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_name VARCHAR(100) NOT NULL,
+    category_id INT NOT NULL,
+    price DOUBLE NOT NULL,
+    product_image VARCHAR(255),
+    available TINYINT(1) DEFAULT 1,        -- 1 = còn, 0 = hết
+    FOREIGN KEY (category_id) REFERENCES Categories(id)
+) ENGINE=InnoDB;
 
 CREATE TABLE Tables (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    table_name TEXT NOT NULL,
-    table_status TEXT DEFAULT 'empty'    -- empty / serving / reserved
-);
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    table_name VARCHAR(50) NOT NULL,
+    table_status ENUM('empty', 'serving', 'reserved') DEFAULT 'empty'
+) ENGINE=InnoDB;
 
--- Order tổng
 CREATE TABLE Orders (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    table_id INTEGER,
-    employee_id INTEGER,                 -- người tạo bill
-    total_before_discount REAL,          -- tổng tiền chưa giảm
-    total REAL,                          -- tổng sau giảm giá
-    order_status TEXT DEFAULT 'unpaid',  -- unpaid / paid / cancelled
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    table_id INT,
+    employee_id INT,
+    total_before_discount DOUBLE,
+    total DOUBLE,
+    order_status ENUM('unpaid','paid','cancelled') DEFAULT 'unpaid',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     paid_at DATETIME,
-    FOREIGN KEY(table_id) REFERENCES Tables(id),
-    FOREIGN KEY(employee_id) REFERENCES Employees(id)
-);
+    FOREIGN KEY (table_id) REFERENCES Tables(id) ON DELETE SET NULL,
+    FOREIGN KEY (employee_id) REFERENCES Employees(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
 
 CREATE TABLE OrderItems (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    order_id INTEGER NOT NULL,
-    product_id INTEGER NOT NULL,
-    quantity INTEGER NOT NULL,
-    price REAL NOT NULL,              -- giá tại thời điểm bán
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    price DOUBLE NOT NULL,
     note TEXT,
-    FOREIGN KEY(order_id) REFERENCES Orders(id) ON DELETE CASCADE,
-    FOREIGN KEY(product_id) REFERENCES Products(id)
-);
+    FOREIGN KEY (order_id) REFERENCES Orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES Products(id)
+) ENGINE=InnoDB;
 
--- Chấm công: dùng cho Staff + Cashier + Admin
 CREATE TABLE Attendance (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    employee_id INTEGER NOT NULL,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT NOT NULL,
     checkin_time DATETIME NOT NULL,
     checkout_time DATETIME,
-    FOREIGN KEY(employee_id) REFERENCES Employees(id)
-);
+    FOREIGN KEY (employee_id) REFERENCES Employees(id)
+) ENGINE=InnoDB;
 
 CREATE TABLE Inventory (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    inventory_name TEXT NOT NULL,
-    quantity REAL NOT NULL,
-    unit TEXT NOT NULL,                  -- gram, ml, kg…
-    low_threshold REAL DEFAULT 0         -- cảnh báo sắp hết
-);
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    inventory_name VARCHAR(100) NOT NULL,
+    quantity DOUBLE NOT NULL,
+    unit VARCHAR(20) NOT NULL,                  -- gram, ml, kg…
+    low_threshold DOUBLE DEFAULT 0
+) ENGINE=InnoDB;
 
 CREATE TABLE InventoryLog (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    inventory_id INTEGER NOT NULL,
-    change REAL NOT NULL,                -- + nhập, - xuất
-    log_type TEXT NOT NULL,              -- import / export / adjust
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    inventory_id INT NOT NULL,
+    log_change DOUBLE NOT NULL,                
+    log_type ENUM('import','export','adjust') NOT NULL,
     note TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(inventory_id) REFERENCES Inventory(id)
-);
+    FOREIGN KEY (inventory_id) REFERENCES Inventory(id)
+) ENGINE=InnoDB;
 
 CREATE TABLE Coupons (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    code TEXT UNIQUE NOT NULL,
-    coupon_type TEXT NOT NULL,           -- percent / amount
-    coupon_value REAL NOT NULL,
-    min_order REAL DEFAULT 0,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    coupon_type ENUM('percent','amount') NOT NULL,
+    coupon_value DOUBLE NOT NULL,
+    min_order DOUBLE DEFAULT 0,
     coupon_start_date DATETIME,
     coupon_end_date DATETIME,
-    usage_limit INTEGER DEFAULT 1
-);
+    usage_limit INT DEFAULT 1
+) ENGINE=InnoDB;
 
 CREATE TABLE OrderCoupons (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    order_id INTEGER NOT NULL,
-    coupon_id INTEGER NOT NULL,
-    discount REAL NOT NULL,
-    FOREIGN KEY(order_id) REFERENCES Orders(id) ON DELETE CASCADE,
-    FOREIGN KEY(coupon_id) REFERENCES Coupons(id)
-);
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    coupon_id INT NOT NULL,
+    discount DOUBLE NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES Orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (coupon_id) REFERENCES Coupons(id)
+) ENGINE=InnoDB;
 
 CREATE TABLE ActivityLog (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    employee_id INTEGER,
-    action_name TEXT NOT NULL,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT,
+    action_name VARCHAR(100) NOT NULL,
     detail TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(employee_id) REFERENCES Employees(id)
-);
+    FOREIGN KEY (employee_id) REFERENCES Employees(id)
+) ENGINE=InnoDB;
 
 CREATE TABLE Salary (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    employee_id INTEGER,
-    salary_month INTEGER,
-    salary_year INTEGER,
-    total_hours REAL,
-    hourly_rate REAL,
-    total_salary REAL,
-    FOREIGN KEY(employee_id) REFERENCES Employees(id),
-    UNIQUE(employee_id, salary_month, salary_year)
-);
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT,
+    salary_month INT,
+    salary_year INT,
+    total_hours DOUBLE,
+    hourly_rate DOUBLE,
+    total_salary DOUBLE,
+    FOREIGN KEY (employee_id) REFERENCES Employees(id),
+    UNIQUE KEY unique_salary(employee_id, salary_month, salary_year)
+) ENGINE=InnoDB;
