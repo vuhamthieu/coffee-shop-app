@@ -81,7 +81,7 @@ CREATE TABLE Inventory (
     inventory_name VARCHAR(100) NOT NULL,
     quantity DOUBLE NOT NULL,
     unit VARCHAR(20) NOT NULL,                  -- gram, ml, kg…
-    low_threshold DOUBLE DEFAULT 0
+    inventory_status ENUM('ok', 'low', 'out') DEFAULT 'ok'
 ) ENGINE=InnoDB;
 
 CREATE TABLE InventoryLog (
