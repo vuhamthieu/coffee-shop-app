@@ -34,6 +34,7 @@ CREATE TABLE Products (
     category_id INT NOT NULL,
     price DOUBLE NOT NULL,
     product_image VARCHAR(255),
+    is_hot TINYINT(1) DEFAULT 0,
     available TINYINT(1) DEFAULT 1,        -- 1 = còn, 0 = hết
     FOREIGN KEY (category_id) REFERENCES Categories(id)
 ) ENGINE=InnoDB;
