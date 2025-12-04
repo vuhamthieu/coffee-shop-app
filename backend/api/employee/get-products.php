@@ -12,6 +12,7 @@ try {
             c.category_name,
             p.price,
             p.product_image,
+            p.is_hot,
             p.available
         FROM Products p
         JOIN Categories c ON p.category_id = c.id
