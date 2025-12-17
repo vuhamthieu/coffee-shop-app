@@ -10,11 +10,12 @@ $table_status = $data['table_status'] ?? null;
 
 $valid_status = ['empty', 'serving', 'reserved'];
 
-if (!$table_id || !$table_status) {
+if (!$data) {
     echo json_encode([
         "status" => false,
-        "message" => "table_id and table_status are required"
-    ]);
+        "message" => "Invalid or empty JSON body",
+        "raw" => file_get_contents("php://input")
+    ], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
