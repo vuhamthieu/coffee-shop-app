@@ -2,15 +2,6 @@
 
 include __DIR__ . '/../../connect.php';
 
-// Kiểm tra phương thức POST
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode([
-        "status" => false,
-        "message" => "Method not allowed"
-    ]);
-    exit;
-}
-
 // Lấy dữ liệu từ POST JSON
 $data = json_decode(file_get_contents("php://input"), true);
 
