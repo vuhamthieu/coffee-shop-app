@@ -49,7 +49,7 @@ try {
         "order" => $order,
         "items" => $items,
         "coupons" => $coupons
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
     echo json_encode([

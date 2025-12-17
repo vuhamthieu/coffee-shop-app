@@ -64,7 +64,7 @@ try {
         "success" => true,
         "message" => "Order item updated successfully",
         "total" => $total
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
     echo json_encode([
