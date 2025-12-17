@@ -13,7 +13,7 @@ try {
     echo json_encode([
         "success" => true,
         "data" => $categories
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
     echo json_encode([

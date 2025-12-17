@@ -16,7 +16,7 @@ try {
     echo json_encode([
         "success" => true,
         "inventory" => $inventory
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
     echo json_encode([

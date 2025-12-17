@@ -13,7 +13,7 @@ try {
         "status" => true,
         "message" => "Tables retrieved successfully",
         "data" => $tables
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
     echo json_encode([

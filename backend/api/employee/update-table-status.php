@@ -60,7 +60,7 @@ try {
             "table_id" => $table_id,
             "table_status" => $table_status
         ]
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
     echo json_encode([
