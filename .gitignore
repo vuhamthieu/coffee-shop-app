@@ -1,0 +1,43 @@
+# JavaFX Native Libraries (bin folder)
+bin/
+
+# Compiled Java classes
+*.class
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pkl
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Build artifacts
+target/
+build/
+out/
+
+# Environment variables
+.env
+.env.local
+
