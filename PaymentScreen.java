@@ -75,19 +75,16 @@ public class PaymentScreen extends Application {
     // HTTP client cho các call backend liên quan đến thanh toán
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
-
     // URL sinh PDF hoá đơn từ backend (sửa lại path cho đúng với file PHP của bạn)
-    private static final String INVOICE_PDF_URL =
-            "http://localhost:8080/backend/api/employee/print-invoice.php";
+    private static final String INVOICE_PDF_URL = "http://localhost:8080/backend/api/employee/print-invoice.php";
     // URL in tem món (labels) từ backend
-    private static final String ITEM_LABELS_PDF_URL =
-            "http://localhost:8080/backend/api/employee/print-item-labels.php";
+    private static final String ITEM_LABELS_PDF_URL = "http://localhost:8080/backend/api/employee/print-item-labels.php";
     // URL apply coupon vào backend
-    private static final String APPLY_COUPON_URL =
-            "http://localhost:8080/backend/api/employee/apply-coupon.php";
+    private static final String APPLY_COUPON_URL = "http://localhost:8080/backend/api/employee/apply-coupon.php";
     // URL validate coupon theo order_total (validate-coupon.php trên backend)
-    private static final String VALIDATE_COUPON_URL =
-            "http://localhost:8080/backend/api/employee/check-coupon.php";
+    private static final String VALIDATE_COUPON_URL = "http://localhost:8080/backend/api/employee/check-coupon.php";
+    // URL remove coupon from order on backend
+    private static final String REMOVE_COUPON_URL = "http://localhost:8080/backend/api/employee/remove-coupon.php";
 
     public PaymentScreen() {
         this("Bàn demo", FXCollections.observableArrayList(
@@ -331,8 +328,7 @@ public class PaymentScreen extends Application {
 
         new Thread(() -> {
             try {
-                HttpResponse<String> response =
-                        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 String body = response.body();
                 System.out.println("validate-coupon => " +
                         response.statusCode() + " " + body);
@@ -390,8 +386,7 @@ public class PaymentScreen extends Application {
 
         new Thread(() -> {
             try {
-                HttpResponse<String> response =
-                        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 System.out.println("apply-coupon => " +
                         response.statusCode() + " " + response.body());
             } catch (Exception ex) {
@@ -424,8 +419,7 @@ public class PaymentScreen extends Application {
 
         new Thread(() -> {
             try {
-                HttpResponse<String> response =
-                        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 System.out.println("remove-coupon => " +
                         response.statusCode() + " " + response.body());
 
@@ -478,7 +472,8 @@ public class PaymentScreen extends Application {
         StringBuilder builder = new StringBuilder();
         builder.append("Coffee Aura Receipt\n");
         builder.append("Bàn: ").append(tableLabel).append("\n");
-        builder.append("Thời gian: ").append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")))
+        builder.append("Thời gian: ")
+                .append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")))
                 .append("\n");
         builder.append("--------------------------------------------------\n");
         invoiceLines.forEach(line -> builder.append(String.format("%-25s x%-2d %s\n",
@@ -654,4 +649,3 @@ public class PaymentScreen extends Application {
         }
     }
 }
-

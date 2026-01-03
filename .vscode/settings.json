@@ -1,3 +1,19 @@
 {
-    "java.debug.settings.onBuildFailureProceed": true
+    "java.debug.settings.onBuildFailureProceed": true,
+    "java.project.sourcePaths": [
+        "."
+    ],
+    "java.project.referencedLibraries": [
+        "c:\\Development_Applications\\coffee-shop-app\\lib\\javafx.base.jar",
+        "c:\\Development_Applications\\coffee-shop-app\\lib\\jfx.incubator.input.jar",
+        "c:\\Development_Applications\\coffee-shop-app\\lib\\javafx.web.jar",
+        "c:\\Development_Applications\\coffee-shop-app\\lib\\javafx.swing.jar",
+        "c:\\Development_Applications\\coffee-shop-app\\lib\\jfx.incubator.richtext.jar",
+        "c:\\Development_Applications\\coffee-shop-app\\lib\\javafx.fxml.jar",
+        "c:\\Development_Applications\\coffee-shop-app\\lib\\javafx-swt.jar",
+        "c:\\Development_Applications\\coffee-shop-app\\lib\\javafx.controls.jar",
+        "c:\\Development_Applications\\coffee-shop-app\\lib\\javafx.media.jar",
+        "c:\\Development_Applications\\coffee-shop-app\\lib\\javafx.graphics.jar",
+        "c:\\Development_Applications\\coffee-shop-app\\lib\\jdk.jsobject.jar"
+    ]
 }

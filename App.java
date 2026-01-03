@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -75,34 +76,20 @@ public class App extends Application {
 
     private final ObservableList<PaymentRecord> paymentRecords = FXCollections.observableArrayList();
     // URL API PHP (chỉnh lại cho đúng domain/path thật của bạn)
-    private static final String ADD_ORDER_ITEM_URL =
-            "http://localhost:8080/backend/api/employee/add-order-item.php";
-    private static final String CREATE_ORDER_URL =
-            "http://localhost:8080/backend/api/employee/create-order.php";
-    private static final String DELETE_ORDER_URL =
-            "http://localhost:8080/backend/api/employee/delete-order.php";
-    private static final String GET_CATEGORIES_URL =
-            "http://localhost:8080/backend/api/employee/get-categories.php";
-    private static final String GET_INVENTORY_URL =
-            "http://localhost:8080/backend/api/employee/get-inventory.php";
-    private static final String GET_ORDER_DETAILS_URL =
-            "http://localhost:8080/backend/api/employee/get-order.php";
-    private static final String GET_PRODUCTS_URL =
-            "http://localhost:8080/backend/api/employee/get-products.php";
-    private static final String GET_TABLES_URL =
-            "http://localhost:8080/backend/api/employee/get-tables.php";
-    private static final String GET_UNPAID_ORDERS_URL =
-            "http://localhost:8080/backend/api/employee/get-unpaid-orders.php";
-    private static final String CHECKOUT_ORDER_URL =
-            "http://localhost:8080/backend/api/employee/order-checkout.php";
-    private static final String UPDATE_ORDER_ITEM_URL =
-            "http://localhost:8080/backend/api/employee/update-order-item.php";
-    private static final String UPDATE_INVENTORY_STATUS_URL =
-            "http://localhost:8080/backend/api/employee/update-inventory-status.php";
-    private static final String UPDATE_PRODUCT_AVAILABLE_URL =
-            "http://localhost:8080/backend/api/employee/update-product-available.php";
-    private static final String UPDATE_TABLE_STATUS_URL =
-            "http://localhost:8080/backend/api/employee/update-table-status.php";
+    private static final String ADD_ORDER_ITEM_URL = "http://localhost:8080/backend/api/employee/add-order-item.php";
+    private static final String CREATE_ORDER_URL = "http://localhost:8080/backend/api/employee/create-order.php";
+    private static final String DELETE_ORDER_URL = "http://localhost:8080/backend/api/employee/delete-order.php";
+    private static final String GET_CATEGORIES_URL = "http://localhost:8080/backend/api/employee/get-categories.php";
+    private static final String GET_INVENTORY_URL = "http://localhost:8080/backend/api/employee/get-inventory.php";
+    private static final String GET_ORDER_DETAILS_URL = "http://localhost:8080/backend/api/employee/get-order.php";
+    private static final String GET_PRODUCTS_URL = "http://localhost:8080/backend/api/employee/get-products.php";
+    private static final String GET_TABLES_URL = "http://localhost:8080/backend/api/employee/get-tables.php";
+    private static final String GET_UNPAID_ORDERS_URL = "http://localhost:8080/backend/api/employee/get-unpaid-orders.php";
+    private static final String CHECKOUT_ORDER_URL = "http://localhost:8080/backend/api/employee/order-checkout.php";
+    private static final String UPDATE_ORDER_ITEM_URL = "http://localhost:8080/backend/api/employee/update-order-item.php";
+    private static final String UPDATE_INVENTORY_STATUS_URL = "http://localhost:8080/backend/api/employee/update-inventory-status.php";
+    private static final String UPDATE_PRODUCT_AVAILABLE_URL = "http://localhost:8080/backend/api/employee/update-product-available.php";
+    private static final String UPDATE_TABLE_STATUS_URL = "http://localhost:8080/backend/api/employee/update-table-status.php";
     // id order hiện tại, được set sau khi gọi create-order
     private int currentOrderId = -1;
     private final HttpClient httpClient = HttpClient.newHttpClient();
@@ -110,9 +97,9 @@ public class App extends Application {
     // Trạng thái bàn đồng bộ đúng với backend: empty, serving, reserved
     private final Map<String, String> statusColor = new HashMap<>() {
         {
-            put("empty", "#D8E2C8");      // Bàn trống
-            put("serving", "#C08A64");    // Đang phục vụ / có khách
-            put("reserved", "#4E3627");   // Đặt trước
+            put("empty", "#D8E2C8"); // Bàn trống
+            put("serving", "#C08A64"); // Đang phục vụ / có khách
+            put("reserved", "#4E3627"); // Đặt trước
         }
     };
 
@@ -700,7 +687,8 @@ public class App extends Application {
                     paymentRecords.add(
                             new PaymentRecord(tbl, currencyFormat.format(total), method, time));
                     // Sau khi thanh toán thành công trên UI:
-                    // 1) Ghi chú xuống DB (lưu vào note của từng OrderItem qua update-order-item.php)
+                    // 1) Ghi chú xuống DB (lưu vào note của từng OrderItem qua
+                    // update-order-item.php)
                     if (currentOrderId > 0 && order != null && !note.isBlank()) {
                         for (OrderItem oi : order) {
                             // deltaQuantity = 0 để không đổi số lượng, chỉ cập nhật note
@@ -731,7 +719,8 @@ public class App extends Application {
         orderTable.setItems(fresh);
         noteArea.clear();
         notesByTable.remove(table.getName());
-        // Sau khi tạo order mới, backend sẽ tự set 'serving', nhưng UI tạm thời để 'empty' cho tới khi có món
+        // Sau khi tạo order mới, backend sẽ tự set 'serving', nhưng UI tạm thời để
+        // 'empty' cho tới khi có món
         table.setStatus("empty");
         tableListView.refresh();
         updateTotalLabel(fresh);
@@ -797,7 +786,8 @@ public class App extends Application {
             ordersByTable.put(targetName, targetOrder);
             ordersByTable.put(source.getName(), FXCollections.observableArrayList());
             notesByTable.put(targetName,
-                    notesByTable.getOrDefault(targetName, "") + " | " + notesByTable.getOrDefault(source.getName(), ""));
+                    notesByTable.getOrDefault(targetName, "") + " | "
+                            + notesByTable.getOrDefault(source.getName(), ""));
             notesByTable.remove(source.getName());
             sourceOrder.clear();
             source.setStatus("Trống");
@@ -1043,8 +1033,8 @@ public class App extends Application {
             System.err.println("Không tìm thấy bàn để tạo order");
             return;
         }
-        int tableId = tableIndex + 1;   // giả định id bảng Tables tương ứng thứ tự này
-        int employeeId = 1;             // TODO: lấy từ đăng nhập / nhận diện khuôn mặt
+        int tableId = tableIndex + 1; // giả định id bảng Tables tương ứng thứ tự này
+        int employeeId = 1; // TODO: lấy từ đăng nhập / nhận diện khuôn mặt
 
         String jsonBody = String.format(
                 "{\"employee_id\":%d,\"table_id\":%d}",
@@ -1125,7 +1115,8 @@ public class App extends Application {
             return;
         }
 
-        // Tìm product_id dựa theo tên món trong menuItems (giống giả định add-order-item)
+        // Tìm product_id dựa theo tên món trong menuItems (giống giả định
+        // add-order-item)
         MenuItemModel matched = menuItems.stream()
                 .filter(m -> m.getName().equals(item.getItemName()))
                 .findFirst()
@@ -1152,8 +1143,7 @@ public class App extends Application {
 
         new Thread(() -> {
             try {
-                HttpResponse<String> response =
-                        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 System.out.println("update-order-item => " +
                         response.statusCode() + " " + response.body());
             } catch (Exception ex) {
@@ -1203,8 +1193,7 @@ public class App extends Application {
 
         new Thread(() -> {
             try {
-                HttpResponse<String> response =
-                        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 System.out.println("checkout-order => " +
                         response.statusCode() + " " + response.body());
             } catch (Exception ex) {
@@ -1221,11 +1210,11 @@ public class App extends Application {
 
         new Thread(() -> {
             try {
-                HttpResponse<String> response =
-                        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 System.out.println("get-categories => " +
                         response.statusCode() + " " + response.body());
-                // Ở đây mình chỉ log ra console; sau này bạn có thể parse JSON để đổ vào UI filter menu.
+                // Ở đây mình chỉ log ra console; sau này bạn có thể parse JSON để đổ vào UI
+                // filter menu.
             } catch (Exception ex) {
                 System.err.println("Lỗi gọi get-categories: " + ex.getMessage());
             }
@@ -1240,11 +1229,11 @@ public class App extends Application {
 
         new Thread(() -> {
             try {
-                HttpResponse<String> response =
-                        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 System.out.println("get-inventory => " +
                         response.statusCode() + " " + response.body());
-                // Tạm thời chỉ log ra console; sau này có thể parse JSON để hiển thị tab Inventory.
+                // Tạm thời chỉ log ra console; sau này có thể parse JSON để hiển thị tab
+                // Inventory.
             } catch (Exception ex) {
                 System.err.println("Lỗi gọi get-inventory: " + ex.getMessage());
             }
@@ -1265,8 +1254,7 @@ public class App extends Application {
 
         new Thread(() -> {
             try {
-                HttpResponse<String> response =
-                        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 System.out.println("get-order-details => " +
                         response.statusCode() + " " + response.body());
                 // Sau này có thể parse JSON để map lại vào UI / PaymentScreen.
@@ -1284,8 +1272,7 @@ public class App extends Application {
 
         new Thread(() -> {
             try {
-                HttpResponse<String> response =
-                        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 System.out.println("get-products => " +
                         response.statusCode() + " " + response.body());
 
@@ -1359,8 +1346,7 @@ public class App extends Application {
 
         new Thread(() -> {
             try {
-                HttpResponse<String> response =
-                        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 System.out.println("get-tables => " +
                         response.statusCode() + " " + response.body());
 
@@ -1445,8 +1431,7 @@ public class App extends Application {
 
         new Thread(() -> {
             try {
-                HttpResponse<String> response =
-                        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 System.out.println("get-unpaid-orders => " +
                         response.statusCode() + " " + response.body());
                 // Sau này có thể parse JSON để hiển thị danh sách order chưa thanh toán.
@@ -1474,8 +1459,7 @@ public class App extends Application {
 
         new Thread(() -> {
             try {
-                HttpResponse<String> response =
-                        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 System.out.println("update-inventory-status => " +
                         response.statusCode() + " " + response.body());
             } catch (Exception ex) {
@@ -1502,8 +1486,7 @@ public class App extends Application {
 
         new Thread(() -> {
             try {
-                HttpResponse<String> response =
-                        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 System.out.println("update-product-available => " +
                         response.statusCode() + " " + response.body());
             } catch (Exception ex) {
@@ -1530,8 +1513,7 @@ public class App extends Application {
 
         new Thread(() -> {
             try {
-                HttpResponse<String> response =
-                        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 System.out.println("update-table-status => " +
                         response.statusCode() + " " + response.body());
             } catch (Exception ex) {

@@ -1,11 +1,20 @@
 @echo off
 setlocal ENABLEDELAYEDEXPANSION
 
-set FX_LIB=%~dp0lib
+REM Allow overriding JavaFX SDK location via JAVA_FX_SDK environment variable.
+if not "%JAVA_FX_SDK%"=="" (
+    set FX_LIB=%JAVA_FX_SDK%\lib
+) else (
+    set FX_LIB=%~dp0lib
+)
+
 if not exist "%FX_LIB%" (
-    echo [ERROR] Khong tim thay thu muc lib chua JavaFX SDK.
+    echo [ERROR] Khong tim thay thu muc lib chua JavaFX SDK: %FX_LIB%
+    echo If you have a full JavaFX SDK, set the JAVA_FX_SDK environment variable to its folder.
     exit /b 1
 )
+
+echo Using JavaFX lib: %FX_LIB%
 
 set MAIN_CLASS=App
 if not "%~1"=="" (
