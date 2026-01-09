@@ -111,6 +111,151 @@
             require 'api/employee/update-table-status.php';
             break;
 
+        // --- Admin routes ---
+        case 'api/admin/add-category':
+            require 'api/admin/add_category.php';
+            break;
+
+        case 'api/admin/add-employee':
+            require 'api/admin/add_employee.php';
+            break;
+
+        case 'api/admin/add-product':
+            require 'api/admin/add_product.php';
+            break;
+
+        case 'api/admin/delete-category':
+            require 'api/admin/delete_category.php';
+            break;
+
+        case 'api/admin/delete-employee':
+            require 'api/admin/delete_employee.php';
+            break;
+
+        case 'api/admin/delete-product':
+            require 'api/admin/delete_product.php';
+            break;
+
+        case 'api/admin/toggle-product-available':
+            require 'api/admin/toggle_product_available.php';
+            break;
+
+        case 'api/admin/update-category':
+            require 'api/admin/update_category.php';
+            break;
+
+        case 'api/admin/update-employee':
+            require 'api/admin/update_employee.php';
+            break;
+
+        case 'api/admin/update-price':
+            require 'api/admin/update_price.php';
+            break;
+
+        case 'api/admin/update-product':
+            require 'api/admin/update_product.php';
+            break;
+
+        case 'api/admin/update-hot-product':
+            require 'api/admin/update-hot-product.php';
+            break;
+
+        // coupons
+        case 'api/admin/coupons/create':
+            require 'api/admin/coupons/create.php';
+            break;
+
+        case 'api/admin/coupons/get-list':
+            require 'api/admin/coupons/get-list.php';
+            break;
+
+        case 'api/admin/coupons/update':
+            require 'api/admin/coupons/update.php';
+            break;
+
+        case 'api/admin/coupons/delete':
+            require 'api/admin/coupons/delete.php';
+            break;
+
+        case 'api/admin/coupons/get-usage':
+            require 'api/admin/coupons/get-usage.php';
+            break;
+
+        // employees (admin)
+        case 'api/admin/employees/update-role':
+            require 'api/admin/employees/update-role.php';
+            break;
+
+        case 'api/admin/employees/lock-account':
+            require 'api/admin/employees/lock-account.php';
+            break;
+
+        case 'api/admin/employees/unlock-account':
+            require 'api/admin/employees/unlock-account.php';
+            break;
+
+        case 'api/admin/employees/get-working-hours':
+            require 'api/admin/employees/get-working-hours.php';
+            break;
+
+        case 'api/admin/employees/add-faceid':
+            require 'api/admin/employees/add-faceid.php';
+            break;
+
+        case 'api/admin/employees/delete-faceid':
+            require 'api/admin/employees/delete-faceid.php';
+            break;
+
+        // inventory
+        case 'api/admin/inventory/get-list':
+            require 'api/admin/inventory/get-list.php';
+            break;
+
+        case 'api/admin/inventory/import':
+            require 'api/admin/inventory/import.php';
+            break;
+
+        case 'api/admin/inventory/export':
+            require 'api/admin/inventory/export.php';
+            break;
+
+        case 'api/admin/inventory/export-by-product':
+            require 'api/admin/inventory/export-by-product.php';
+            break;
+
+        case 'api/admin/inventory/get-low-stock-alert':
+            require 'api/admin/inventory/get-low-stock-alert.php';
+            break;
+
+        // reports
+        case 'api/admin/reports/revenue-by-day':
+            require 'api/admin/reports/revenue-by-day.php';
+            break;
+
+        case 'api/admin/reports/revenue-by-week':
+            require 'api/admin/reports/revenue-by-week.php';
+            break;
+
+        case 'api/admin/reports/revenue-by-month':
+            require 'api/admin/reports/revenue-by-month.php';
+            break;
+
+        case 'api/admin/reports/revenue-by-shift':
+            require 'api/admin/reports/revenue-by-shift.php';
+            break;
+
+        case 'api/admin/reports/best-selling-products':
+            require 'api/admin/reports/best-selling-products.php';
+            break;
+
+        case 'api/admin/reports/customer-count':
+            require 'api/admin/reports/customer-count.php';
+            break;
+
+        case 'api/admin/reports/expenses':
+            require 'api/admin/reports/expenses.php';
+            break;
+
         default:
             http_response_code(404);
             echo json_encode([
