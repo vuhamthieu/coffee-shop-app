@@ -106,7 +106,6 @@ public class App extends Application {
     // id order hiện tại, được set sau khi gọi create-order
     private int currentOrderId = -1;
     private final HttpClient httpClient = HttpClient.newHttpClient();
-
     // Trạng thái bàn đồng bộ đúng với backend: empty, serving, reserved
     private final Map<String, String> statusColor = new HashMap<>() {
         {
