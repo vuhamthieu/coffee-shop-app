@@ -100,7 +100,7 @@ public class AdminDashboard extends Application {
     private ComboBox<String> filterMethodCombo;
     private ComboBox<String> dateRangeCombo;
     private Label reportDisplayLabel;
-    
+
     // Menu Tab Data
     private ObservableList<CategoryModel> categories = FXCollections.observableArrayList();
     private ObservableList<ProductModel> products = FXCollections.observableArrayList();
@@ -1193,9 +1193,11 @@ public class AdminDashboard extends Application {
                     String obj = normalizeJsonObject(raw);
                     String idStr = firstNonBlank(extractJsonValue(obj, "id"), extractJsonValue(obj, "inventory_id"));
                     String name = firstNonBlank(extractJsonValue(obj, "name"), extractJsonValue(obj, "inventory_name"));
-                    String qtyStr = firstNonBlank(extractJsonValue(obj, "quantity"), extractJsonValue(obj, "qty"), extractJsonValue(obj, "stock"));
+                    String qtyStr = firstNonBlank(extractJsonValue(obj, "quantity"), extractJsonValue(obj, "qty"),
+                            extractJsonValue(obj, "stock"));
                     String unit = firstNonBlank(extractJsonValue(obj, "unit"), extractJsonValue(obj, "inventory_unit"));
-                    String status = firstNonBlank(extractJsonValue(obj, "status"), extractJsonValue(obj, "inventory_status"));
+                    String status = firstNonBlank(extractJsonValue(obj, "status"),
+                            extractJsonValue(obj, "inventory_status"));
 
                     if (name == null || name.isBlank()) {
                         continue;
@@ -1538,20 +1540,73 @@ public class AdminDashboard extends Application {
     }
 
     private String extractJsonValue(String json, String key) {
-        String pattern = "\"" + key + "\":";
-        int start = json.indexOf(pattern);
+        if (json == null || json.trim().isEmpty())
+            return "";
+
+        // Tạo pattern tìm key: "key": hoặc "key":value (có thể có khoảng trắng)
+        String pattern = "\"" + key + "\"\\s*:\\s*";
+        int start = -1;
+
+        // Tìm vị trí đầu tiên của pattern
+        for (int i = 0; i < json.length(); i++) {
+            if (json.startsWith(pattern, i)) {
+                start = i + pattern.length();
+                break;
+            }
+        }
+
         if (start < 0)
             return "";
-        start += pattern.length();
-        if (start < json.length() && json.charAt(start) == '"') {
+
+        // Bỏ qua khoảng trắng sau dấu :
+        while (start < json.length() && Character.isWhitespace(json.charAt(start))) {
             start++;
-            int end = json.indexOf('"', start);
-            return end > start ? json.substring(start, end) : "";
+        }
+
+        if (start >= json.length())
+            return "";
+
+        char firstChar = json.charAt(start);
+
+        if (firstChar == '"') {
+            // Là chuỗi
+            start++; // bỏ dấu " mở
+            StringBuilder sb = new StringBuilder();
+            boolean escape = false;
+            for (int i = start; i < json.length(); i++) {
+                char c = json.charAt(i);
+                if (escape) {
+                    sb.append(c);
+                    escape = false;
+                    continue;
+                }
+                if (c == '\\') {
+                    escape = true;
+                    continue;
+                }
+                if (c == '"') {
+                    // Kết thúc chuỗi
+                    return sb.toString();
+                }
+                sb.append(c);
+            }
+            return sb.toString(); // trường hợp chuỗi không đóng (dù hiếm)
         } else {
-            int end = json.indexOf(',', start);
-            if (end < 0)
-                end = json.indexOf('}', start);
-            return end > start ? json.substring(start, end).trim() : "";
+            // Là số, boolean, null, hoặc object/array (lấy đến dấu , hoặc })
+            int end = start;
+            while (end < json.length()) {
+                char c = json.charAt(end);
+                if (c == ',' || c == '}' || c == ']') {
+                    break;
+                }
+                end++;
+            }
+            String value = json.substring(start, end).trim();
+            // Loại bỏ dấu nháy nếu có (thỉnh thoảng backend trả số trong dấu nháy)
+            if (value.startsWith("\"") && value.endsWith("\"")) {
+                value = value.substring(1, value.length() - 1);
+            }
+            return value;
         }
     }
 
