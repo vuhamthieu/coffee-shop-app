@@ -1,5 +1,6 @@
 # JavaFX Native Libraries (bin folder)
 bin/
+*.dll
 
 # Compiled Java classes
 *.class

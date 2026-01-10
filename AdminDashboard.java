@@ -57,6 +57,7 @@ public class AdminDashboard extends Application {
     private static final String LOCK_ACCOUNT_URL = BASE_URL + "employees/lock-account.php";
     private static final String UNLOCK_ACCOUNT_URL = BASE_URL + "employees/unlock-account.php";
     private static final String GET_WORKING_HOURS_URL = BASE_URL + "employees/get-working-hours.php";
+    private static final String GET_EMPLOYEES_URL = BASE_URL + "get-employees.php";
 
     // Inventory
     private static final String GET_INVENTORY_LIST_URL = BASE_URL + "inventory/get-list.php";
@@ -174,6 +175,7 @@ public class AdminDashboard extends Application {
         loadProducts();
         loadInventory();
         loadCoupons();
+        loadEmployees();
     }
 
     private VBox buildHeader() {
@@ -803,6 +805,7 @@ public class AdminDashboard extends Application {
         grid.setHgap(10);
         grid.setVgap(10);
         TextField nameField = new TextField();
+        TextField phoneField = new TextField();
         TextField userField = new TextField();
         PasswordField passField = new PasswordField();
         ComboBox<Integer> roleCombo = new ComboBox<>();
@@ -810,17 +813,19 @@ public class AdminDashboard extends Application {
         roleCombo.setValue(2);
         grid.add(new Label("Tên:"), 0, 0);
         grid.add(nameField, 1, 0);
-        grid.add(new Label("User:"), 0, 1);
-        grid.add(userField, 1, 1);
-        grid.add(new Label("Pass:"), 0, 2);
-        grid.add(passField, 1, 2);
-        grid.add(new Label("Role:"), 0, 3);
-        grid.add(roleCombo, 1, 3);
+        grid.add(new Label("Phone:"), 0, 1);
+        grid.add(phoneField, 1, 1);
+        grid.add(new Label("User:"), 0, 2);
+        grid.add(userField, 1, 2);
+        grid.add(new Label("Pass:"), 0, 3);
+        grid.add(passField, 1, 3);
+        grid.add(new Label("Role:"), 0, 4);
+        grid.add(roleCombo, 1, 4);
         dialog.getDialogPane().setContent(grid);
         dialog.setResultConverter(btn -> {
             if (btn == ButtonType.OK) {
-                return String.format("{\"employee_name\":\"%s\", \"username\":\"%s\", \"employee_password\":\"%s\", \"role_id\":%d}",
-                        nameField.getText(), userField.getText(), passField.getText(), roleCombo.getValue());
+                return String.format("{\"employee_name\":\"%s\",\"phone\":\"%s\",\"username\":\"%s\", \"employee_password\":\"%s\", \"role_id\":%d}",
+                        nameField.getText(), phoneField.getText(), userField.getText(), passField.getText(), roleCombo.getValue());
             }
             return null;
         });
@@ -844,6 +849,35 @@ public class AdminDashboard extends Application {
         String json = String.format("{\"id\": %d}", selected.getId());
         sendPostRequest(url, json, "Khóa/Mở khóa", null);
     }
+
+    private void loadEmployees() {
+    new Thread(() -> {
+        try {
+            HttpRequest request = HttpRequest.newBuilder(URI.create(GET_EMPLOYEES_URL)).GET().build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            String[] items = extractDataArrayObjects(response.body());
+
+            var loaded = FXCollections.<EmployeeModel>observableArrayList();
+            for (String raw : items) {
+                String obj = normalizeJsonObject(raw);
+                int id = parseIntSafe(extractJsonValue(obj, "id"));
+                // Lưu ý: PHP trả về 'employee_name', Model Java cần 'name'
+                String name = extractJsonValue(obj, "employee_name"); 
+                String username = extractJsonValue(obj, "username");
+                int roleId = parseIntSafe(extractJsonValue(obj, "role_id"));
+                boolean active = parseBooleanInt(extractJsonValue(obj, "active"), true);
+
+                if (username != null && !username.isBlank()) {
+                    loaded.add(new EmployeeModel(id, name, username, roleId, active));
+                }
+            }
+            Platform.runLater(() -> {
+                employees.setAll(loaded);
+                if (employeeTable != null) employeeTable.refresh();
+            });
+        } catch (Exception e) { e.printStackTrace(); }
+    }).start();
+}
 
     // --- Inventory ---
     private void showImportDialog() {
