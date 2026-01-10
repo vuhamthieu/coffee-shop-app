@@ -31,9 +31,8 @@ import java.util.Optional;
 public class AdminDashboard extends Application {
 
     // Base URL for Admin API
-    private static final String BASE_URL = "http://localhost:8080/backend/api/admin/";
-    private static final String BASE_EMPLOYEE_URL = "http://localhost:8080/backend/api/employee/";
-
+    private static final String BASE_URL = "http://localhost/coffee-shop-app/backend/api/admin/";
+    private static final String BASE_EMPLOYEE_URL = "http://localhost/coffee-shop-app/backend/api/employee/";
     // API Endpoints
     // Categories
     private static final String GET_CATEGORIES_URL = BASE_EMPLOYEE_URL + "get-categories.php";
@@ -89,7 +88,6 @@ public class AdminDashboard extends Application {
     private final FilteredList<PaymentRecord> filteredPayments = new FilteredList<>(allPayments);
     private final SortedList<PaymentRecord> sortedPayments = new SortedList<>(filteredPayments);
 
-
     private static final String LOGOUT_URL = BASE_EMPLOYEE_URL + "logout.php";
     // UI Components - Dashboard
     private Label totalRevenueLabel;
@@ -122,8 +120,6 @@ public class AdminDashboard extends Application {
     // Coupon Tab Data
     private ObservableList<CouponModel> coupons = FXCollections.observableArrayList();
     private TableView<CouponModel> couponTable;
-
-    
 
     @Override
     public void start(Stage primaryStage) {
@@ -184,36 +180,28 @@ public class AdminDashboard extends Application {
         Label title = new Label("☕ Coffee Aura - Quản trị hệ thống");
         title.setStyle("-fx-text-fill:#6B4C3B;-fx-font-size:28px;-fx-font-weight:bold;");
 
-        // Spacer để đẩy nút đăng xuất sang phải
         javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // Nút đăng xuất
         Button logoutBtn = new Button("🚪 Đăng xuất");
         logoutBtn.setStyle("-fx-background-color:#D32F2F;-fx-text-fill:white;-fx-font-weight:bold;"
                 + "-fx-background-radius:10;-fx-cursor:hand;-fx-padding: 8 15;");
-        
-        // Hiệu ứng hover
+
         logoutBtn.setOnMouseEntered(e -> logoutBtn.setStyle("-fx-background-color:#B71C1C;-fx-text-fill:white;"
                 + "-fx-font-weight:bold;-fx-background-radius:10;-fx-cursor:hand;-fx-padding: 8 15;"));
         logoutBtn.setOnMouseExited(e -> logoutBtn.setStyle("-fx-background-color:#D32F2F;-fx-text-fill:white;"
                 + "-fx-font-weight:bold;-fx-background-radius:10;-fx-cursor:hand;-fx-padding: 8 15;"));
 
-        // Xử lý sự kiện click
         logoutBtn.setOnAction(e -> handleLogout((Stage) logoutBtn.getScene().getWindow()));
 
         HBox headerBox = new HBox(15);
         headerBox.setAlignment(Pos.CENTER_LEFT);
-        headerBox.getChildren().addAll(title, spacer, logoutBtn); // Thêm spacer và nút logout vào
-        headerBox.setPadding(new Insets(10, 20, 15, 10)); // Tăng padding phải lên 20
+        headerBox.getChildren().addAll(title, spacer, logoutBtn); 
+        headerBox.setPadding(new Insets(10, 20, 15, 10)); 
 
         return new VBox(headerBox);
     }
 
-    // ... [GIỮ NGUYÊN CODE PHẦN DASHBOARD NHƯ CŨ CỦA BẠN] ...
-    // Để tiết kiệm không gian, tôi sẽ chỉ hiển thị các phần buildDashboardTab, etc. nếu cần thiết.
-    // Giả sử phần Dashboard UI giữ nguyên như file gốc của bạn.
-    
     // ==================== DASHBOARD TAB ====================
     private VBox buildDashboardTab() {
         VBox dashboard = new VBox(15);
@@ -225,7 +213,7 @@ public class AdminDashboard extends Application {
         VBox.setVgrow(tablePanel, Priority.ALWAYS);
         return dashboard;
     }
-    
+
     private FlowPane buildStatsCards() {
         FlowPane cards = new FlowPane();
         cards.setHgap(15);
@@ -248,12 +236,13 @@ public class AdminDashboard extends Application {
         cards.getChildren().addAll(totalCard, todayCard, weeklyCard, monthlyCard, cashCard, cardCard, transferCard);
         return cards;
     }
-    
+
     private VBox createStatCard(String title, String value, String color) {
         VBox card = new VBox(8);
         card.setPadding(new Insets(20));
         card.setPrefWidth(220);
-        card.setStyle("-fx-background-color:#FFFFFF;-fx-background-radius:18;-fx-effect:dropshadow(gaussian,rgba(107,76,59,0.12),14,0,0,4);");
+        card.setStyle(
+                "-fx-background-color:#FFFFFF;-fx-background-radius:18;-fx-effect:dropshadow(gaussian,rgba(107,76,59,0.12),14,0,0,4);");
         Label titleLabel = new Label(title);
         titleLabel.setStyle("-fx-text-fill:#6B4C3B;-fx-font-size:14px;-fx-font-weight:bold;");
         Label valueLabel = new Label(value);
@@ -272,7 +261,8 @@ public class AdminDashboard extends Application {
         searchField = new TextField();
         searchField.setPromptText("Tìm theo bàn, phương thức...");
         searchField.setPrefWidth(250);
-        searchField.setStyle("-fx-background-radius:12;-fx-background-color:#FAFAFA;-fx-border-color:rgba(107,76,59,0.2);-fx-border-width:1;-fx-padding:10;-fx-text-fill:#6B4C3B;");
+        searchField.setStyle(
+                "-fx-background-radius:12;-fx-background-color:#FAFAFA;-fx-border-color:rgba(107,76,59,0.2);-fx-border-width:1;-fx-padding:10;-fx-text-fill:#6B4C3B;");
         searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
         Label methodLabel = new Label("Phương thức:");
         methodLabel.setStyle("-fx-text-fill:#6B4C3B;-fx-font-weight:bold;");
@@ -280,7 +270,8 @@ public class AdminDashboard extends Application {
         filterMethodCombo.getItems().addAll("Tất cả", "Tiền mặt", "Thẻ", "Chuyển khoản");
         filterMethodCombo.setValue("Tất cả");
         filterMethodCombo.setPrefWidth(150);
-        filterMethodCombo.setStyle("-fx-background-radius:12;-fx-background-color:#FAFAFA;-fx-border-color:rgba(107,76,59,0.2);-fx-border-width:1;-fx-padding:10;-fx-text-fill:#6B4C3B;");
+        filterMethodCombo.setStyle(
+                "-fx-background-radius:12;-fx-background-color:#FAFAFA;-fx-border-color:rgba(107,76,59,0.2);-fx-border-width:1;-fx-padding:10;-fx-text-fill:#6B4C3B;");
         filterMethodCombo.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
         Label dateLabel = new Label("Khoảng thời gian:");
         dateLabel.setStyle("-fx-text-fill:#6B4C3B;-fx-font-weight:bold;");
@@ -288,29 +279,39 @@ public class AdminDashboard extends Application {
         dateRangeCombo.getItems().addAll("Tất cả", "Hôm nay", "Tuần này", "Tháng này", "7 ngày qua", "30 ngày qua");
         dateRangeCombo.setValue("Tất cả");
         dateRangeCombo.setPrefWidth(150);
-        dateRangeCombo.setStyle("-fx-background-radius:12;-fx-background-color:#FAFAFA;-fx-border-color:rgba(107,76,59,0.2);-fx-border-width:1;-fx-padding:10;-fx-text-fill:#6B4C3B;");
-        dateRangeCombo.valueProperty().addListener((obs, oldVal, newVal) -> { applyFilters(); updateStatistics(); });
+        dateRangeCombo.setStyle(
+                "-fx-background-radius:12;-fx-background-color:#FAFAFA;-fx-border-color:rgba(107,76,59,0.2);-fx-border-width:1;-fx-padding:10;-fx-text-fill:#6B4C3B;");
+        dateRangeCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+            applyFilters();
+            updateStatistics();
+        });
         Button refreshBtn = createPrimaryButton("🔄 Làm mới");
-        refreshBtn.setOnAction(e -> { loadDashboardData(); updateStatistics(); });
+        refreshBtn.setOnAction(e -> {
+            loadDashboardData();
+            updateStatistics();
+        });
         Button exportBtn = createGhostButton("📊 Xuất dữ liệu");
         exportBtn.setOnAction(e -> exportData());
         HBox buttonBox = new HBox(10, refreshBtn, exportBtn);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
         HBox.setHgrow(buttonBox, Priority.ALWAYS);
-        controls.getChildren().addAll(searchLabel, searchField, methodLabel, filterMethodCombo, dateLabel, dateRangeCombo, buttonBox);
+        controls.getChildren().addAll(searchLabel, searchField, methodLabel, filterMethodCombo, dateLabel,
+                dateRangeCombo, buttonBox);
         return controls;
     }
 
     private VBox buildTablePanel() {
         VBox panel = new VBox(10);
         panel.setPadding(new Insets(15));
-        panel.setStyle("-fx-background-color:#FFFFFF;-fx-background-radius:18;-fx-effect:dropshadow(gaussian,rgba(107,76,59,0.12),14,0,0,4);");
+        panel.setStyle(
+                "-fx-background-color:#FFFFFF;-fx-background-radius:18;-fx-effect:dropshadow(gaussian,rgba(107,76,59,0.12),14,0,0,4);");
         Label tableTitle = new Label("Lịch sử thanh toán");
         tableTitle.setStyle("-fx-text-fill:#6B4C3B;-fx-font-size:18px;-fx-font-weight:bold;");
         dashboardTable = new TableView<>(sortedPayments);
         dashboardTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         dashboardTable.setPlaceholder(new Label("Chưa có dữ liệu thanh toán"));
-        dashboardTable.setStyle("-fx-background-color:#FFFFFF;-fx-background-radius:12;-fx-border-color:rgba(107,76,59,0.1);-fx-border-width:1;");
+        dashboardTable.setStyle(
+                "-fx-background-color:#FFFFFF;-fx-background-radius:12;-fx-border-color:rgba(107,76,59,0.1);-fx-border-width:1;");
         sortedPayments.comparatorProperty().bind(dashboardTable.comparatorProperty());
         TableColumn<PaymentRecord, String> colDate = new TableColumn<>("Thời gian");
         colDate.setCellValueFactory(new PropertyValueFactory<>("time"));
@@ -331,14 +332,21 @@ public class AdminDashboard extends Application {
             @Override
             protected void updateItem(Double amount, boolean empty) {
                 super.updateItem(amount, empty);
-                if (empty || amount == null) setText(null); else { setText(currency.format(amount)); setStyle("-fx-text-fill:#6B4C3B;-fx-font-weight:bold;-fx-alignment:CENTER_RIGHT;"); }
+                if (empty || amount == null)
+                    setText(null);
+                else {
+                    setText(currency.format(amount));
+                    setStyle("-fx-text-fill:#6B4C3B;-fx-font-weight:bold;-fx-alignment:CENTER_RIGHT;");
+                }
             }
         });
         dashboardTable.getColumns().addAll(colDate, colTable, colMethod, colAmount);
         Label summaryLabel = new Label();
         summaryLabel.setStyle("-fx-text-fill:#6B4C3B;-fx-font-size:14px;-fx-font-weight:bold;");
         updateSummaryLabel(summaryLabel);
-        filteredPayments.addListener((javafx.collections.ListChangeListener.Change<? extends PaymentRecord> c) -> updateSummaryLabel(summaryLabel));
+        filteredPayments.addListener(
+                (javafx.collections.ListChangeListener.Change<? extends PaymentRecord> c) -> updateSummaryLabel(
+                        summaryLabel));
         panel.getChildren().addAll(tableTitle, dashboardTable, summaryLabel);
         VBox.setVgrow(dashboardTable, Priority.ALWAYS);
         return panel;
@@ -355,18 +363,33 @@ public class AdminDashboard extends Application {
         String methodFilter = filterMethodCombo.getValue();
         String dateFilter = dateRangeCombo.getValue();
         filteredPayments.setPredicate(payment -> {
-            boolean matchesSearch = searchText.isEmpty() || payment.getTable().toLowerCase().contains(searchText) || payment.getMethod().toLowerCase().contains(searchText);
-            boolean matchesMethod = methodFilter == null || methodFilter.equals("Tất cả") || payment.getMethod().equals(methodFilter);
+            boolean matchesSearch = searchText.isEmpty() || payment.getTable().toLowerCase().contains(searchText)
+                    || payment.getMethod().toLowerCase().contains(searchText);
+            boolean matchesMethod = methodFilter == null || methodFilter.equals("Tất cả")
+                    || payment.getMethod().equals(methodFilter);
             boolean matchesDate = true;
             if (dateFilter != null && !dateFilter.equals("Tất cả")) {
-                LocalDate paymentDate = LocalDate.parse(payment.getTime().substring(0, 10), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                LocalDate paymentDate = LocalDate.parse(payment.getTime().substring(0, 10),
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                 LocalDate today = LocalDate.now();
                 switch (dateFilter) {
-                    case "Hôm nay": matchesDate = paymentDate.equals(today); break;
-                    case "Tuần này": LocalDate weekStart = today.minusDays(today.getDayOfWeek().getValue() - 1); matchesDate = !paymentDate.isBefore(weekStart); break;
-                    case "Tháng này": matchesDate = paymentDate.getMonth() == today.getMonth() && paymentDate.getYear() == today.getYear(); break;
-                    case "7 ngày qua": matchesDate = !paymentDate.isBefore(today.minusDays(7)); break;
-                    case "30 ngày qua": matchesDate = !paymentDate.isBefore(today.minusDays(30)); break;
+                    case "Hôm nay":
+                        matchesDate = paymentDate.equals(today);
+                        break;
+                    case "Tuần này":
+                        LocalDate weekStart = today.minusDays(today.getDayOfWeek().getValue() - 1);
+                        matchesDate = !paymentDate.isBefore(weekStart);
+                        break;
+                    case "Tháng này":
+                        matchesDate = paymentDate.getMonth() == today.getMonth()
+                                && paymentDate.getYear() == today.getYear();
+                        break;
+                    case "7 ngày qua":
+                        matchesDate = !paymentDate.isBefore(today.minusDays(7));
+                        break;
+                    case "30 ngày qua":
+                        matchesDate = !paymentDate.isBefore(today.minusDays(30));
+                        break;
                 }
             }
             return matchesSearch && matchesMethod && matchesDate;
@@ -374,16 +397,16 @@ public class AdminDashboard extends Application {
     }
 
     private void updateStatistics() {
-        // Mock data logic remains the same
     }
 
     private void loadDashboardData() {
         allPayments.clear();
-        // Bạn có thể gọi API get-unpaid-orders hoặc API lịch sử giao dịch ở đây nếu có
         updateStatistics();
     }
-    
-    private void exportData() { System.out.println("Exporting data..."); }
+
+    private void exportData() {
+        System.out.println("Exporting data...");
+    }
 
     // ==================== MENU TAB ====================
     private VBox buildMenuTab() {
@@ -448,7 +471,10 @@ public class AdminDashboard extends Application {
             @Override
             protected void updateItem(Double price, boolean empty) {
                 super.updateItem(price, empty);
-                if (empty || price == null) setText(null); else setText(currency.format(price));
+                if (empty || price == null)
+                    setText(null);
+                else
+                    setText(currency.format(price));
             }
         });
         TableColumn<ProductModel, Boolean> pAvailCol = new TableColumn<>("Còn bán");
@@ -456,7 +482,7 @@ public class AdminDashboard extends Application {
         productTable.getColumns().addAll(pIdCol, pNameCol, pCatCol, pPriceCol, pAvailCol);
         HBox btnBox = new HBox(10);
         Button addProdBtn = createPrimaryButton("➕ Thêm");
-        Button editProdBtn = createGhostButton("✏️ Sửa"); // Bạn tự implement hàm sửa tương tự thêm
+        Button editProdBtn = createGhostButton("✏️ Sửa");
         Button delProdBtn = createGhostButton("🗑️ Xóa");
         Button toggleAvailBtn = createGhostButton("🔒 Khóa/Mở");
         Button updatePriceBtn = createGhostButton("💰 Đổi giá");
@@ -533,7 +559,10 @@ public class AdminDashboard extends Application {
         Button importBtn = createPrimaryButton("📥 Nhập kho");
         Button refreshInvBtn = createGhostButton("🔄 Làm mới");
         importBtn.setOnAction(e -> showImportDialog());
-        refreshInvBtn.setOnAction(e -> { loadInventory(); loadLowStockAlerts(alertLabel); });
+        refreshInvBtn.setOnAction(e -> {
+            loadInventory();
+            loadLowStockAlerts(alertLabel);
+        });
         btnBox.getChildren().addAll(importBtn, refreshInvBtn);
         inventoryTab.getChildren().addAll(title, alertPanel, inventoryTable, btnBox);
         VBox.setVgrow(inventoryTable, Priority.ALWAYS);
@@ -577,22 +606,27 @@ public class AdminDashboard extends Application {
         title.setStyle("-fx-text-fill:#6B4C3B;-fx-font-size:20px;-fx-font-weight:bold;");
         HBox selectorBox = new HBox(10);
         ComboBox<String> reportTypeCombo = new ComboBox<>();
-        reportTypeCombo.getItems().addAll("Doanh thu theo ngày", "Doanh thu theo tuần", "Doanh thu theo tháng", "Doanh thu theo ca", "Món bán chạy", "Số lượng khách", "Chi phí");
+        reportTypeCombo.getItems().addAll("Doanh thu theo ngày", "Doanh thu theo tuần", "Doanh thu theo tháng",
+                "Doanh thu theo ca", "Món bán chạy", "Số lượng khách", "Chi phí");
         reportTypeCombo.setValue("Doanh thu theo ngày");
         reportTypeCombo.setPrefWidth(200);
         DatePicker datePicker = new DatePicker(LocalDate.now());
         ComboBox<String> monthCombo = new ComboBox<>();
-        monthCombo.getItems().addAll("Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12");
+        monthCombo.getItems().addAll("Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7",
+                "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12");
         monthCombo.setValue("Tháng " + LocalDate.now().getMonthValue());
         ComboBox<Integer> yearCombo = new ComboBox<>();
         int currentYear = LocalDate.now().getYear();
-        for (int i = currentYear - 2; i <= currentYear; i++) yearCombo.getItems().add(i);
+        for (int i = currentYear - 2; i <= currentYear; i++)
+            yearCombo.getItems().add(i);
         yearCombo.setValue(currentYear);
         Button loadBtn = createPrimaryButton("📊 Tải báo cáo");
-        loadBtn.setOnAction(e -> loadReport(reportTypeCombo.getValue(), datePicker.getValue(), monthCombo.getSelectionModel().getSelectedIndex() + 1, yearCombo.getValue()));
-        selectorBox.getChildren().addAll(new Label("Loại báo cáo:"), reportTypeCombo, new Label("Ngày:"), datePicker, new Label("Tháng:"), monthCombo, new Label("Năm:"), yearCombo, loadBtn);
+        loadBtn.setOnAction(e -> loadReport(reportTypeCombo.getValue(), datePicker.getValue(),
+                monthCombo.getSelectionModel().getSelectedIndex() + 1, yearCombo.getValue()));
+        selectorBox.getChildren().addAll(new Label("Loại báo cáo:"), reportTypeCombo, new Label("Ngày:"), datePicker,
+                new Label("Tháng:"), monthCombo, new Label("Năm:"), yearCombo, loadBtn);
         selectorBox.setAlignment(Pos.CENTER_LEFT);
-        
+
         reportDisplayArea = new TextArea();
         reportDisplayArea.setEditable(false);
         reportDisplayArea.setWrapText(true);
@@ -614,7 +648,7 @@ public class AdminDashboard extends Application {
         dialog.setContentText("Tên:");
         dialog.showAndWait().ifPresent(name -> {
             if (!name.trim().isEmpty()) {
-                String json = String.format("{\"name\": \"%s\"}", name);
+                String json = String.format("{\"category_name\": \"%s\"}", name);
                 sendPostRequest(ADD_CATEGORY_URL, json, "Thêm danh mục", this::loadCategories);
             }
         });
@@ -622,14 +656,17 @@ public class AdminDashboard extends Application {
 
     private void showEditCategoryDialog() {
         CategoryModel selected = categoryTable.getSelectionModel().getSelectedItem();
-        if (selected == null) { showAlert("Chưa chọn danh mục", "Vui lòng chọn danh mục để sửa"); return; }
-        
+        if (selected == null) {
+            showAlert("Chưa chọn danh mục", "Vui lòng chọn danh mục để sửa");
+            return;
+        }
+
         TextInputDialog dialog = new TextInputDialog(selected.getName());
         dialog.setTitle("Sửa danh mục");
         dialog.setHeaderText("Nhập tên mới cho: " + selected.getName());
         dialog.showAndWait().ifPresent(name -> {
             if (!name.trim().isEmpty()) {
-                String json = String.format("{\"category_id\": %d, \"name\": \"%s\"}", selected.getId(), name);
+                String json = String.format("{\"id\": %d, \"category_name\": \"%s\"}", selected.getId(), name);
                 sendPostRequest(UPDATE_CATEGORY_URL, json, "Sửa danh mục", this::loadCategories);
             }
         });
@@ -637,14 +674,17 @@ public class AdminDashboard extends Application {
 
     private void deleteCategory() {
         CategoryModel selected = categoryTable.getSelectionModel().getSelectedItem();
-        if (selected == null) { showAlert("Chưa chọn danh mục", "Vui lòng chọn danh mục để xóa"); return; }
-        
+        if (selected == null) {
+            showAlert("Chưa chọn danh mục", "Vui lòng chọn danh mục để xóa");
+            return;
+        }
+
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Xóa danh mục");
         alert.setHeaderText("Bạn có chắc chắn muốn xóa: " + selected.getName() + "?");
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                String json = String.format("{\"category_id\": %d}", selected.getId());
+                String json = String.format("{\"id\": %d}", selected.getId());
                 sendPostRequest(DELETE_CATEGORY_URL, json, "Xóa danh mục", this::loadCategories);
             }
         });
@@ -658,22 +698,26 @@ public class AdminDashboard extends Application {
         dialog.getDialogPane().getButtonTypes().addAll(loginButtonType, ButtonType.CANCEL);
 
         GridPane grid = new GridPane();
-        grid.setHgap(10); grid.setVgap(10);
+        grid.setHgap(10);
+        grid.setVgap(10);
         TextField nameField = new TextField();
         ComboBox<CategoryModel> categoryCombo = new ComboBox<>(categories);
-        // Định nghĩa cách hiển thị Category trong ComboBox
+        
         categoryCombo.setCellFactory(lv -> new ListCell<CategoryModel>() {
             @Override protected void updateItem(CategoryModel item, boolean empty) { super.updateItem(item, empty); setText(empty ? "" : item.getName()); }
         });
         categoryCombo.setButtonCell(new ListCell<CategoryModel>() {
             @Override protected void updateItem(CategoryModel item, boolean empty) { super.updateItem(item, empty); setText(empty ? "" : item.getName()); }
         });
-        
+
         TextField priceField = new TextField();
 
-        grid.add(new Label("Tên món:"), 0, 0); grid.add(nameField, 1, 0);
-        grid.add(new Label("Danh mục:"), 0, 1); grid.add(categoryCombo, 1, 1);
-        grid.add(new Label("Giá:"), 0, 2); grid.add(priceField, 1, 2);
+        grid.add(new Label("Tên món:"), 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(new Label("Danh mục:"), 0, 1);
+        grid.add(categoryCombo, 1, 1);
+        grid.add(new Label("Giá:"), 0, 2);
+        grid.add(priceField, 1, 2);
 
         dialog.getDialogPane().setContent(grid);
         dialog.setResultConverter(dialogButton -> {
@@ -683,58 +727,68 @@ public class AdminDashboard extends Application {
                     int catId = categoryCombo.getValue().getId();
                     double price = Double.parseDouble(priceField.getText());
                     return new Pair<>(name, new Pair<>(catId, price));
-                } catch (Exception e) { return null; }
+                } catch (Exception e) {
+                    return null;
+                }
             }
             return null;
         });
 
         dialog.showAndWait().ifPresent(result -> {
-            String json = String.format("{\"name\": \"%s\", \"category_id\": %d, \"price\": %.0f, \"description\":\"\"}", 
+            String json = String.format(
+                    "{\"product_name\": \"%s\", \"category_id\": %d, \"price\": %.0f, \"product_image\":\"\", \"is_hot\":0}",
                     result.getKey(), result.getValue().getKey(), result.getValue().getValue());
             sendPostRequest(ADD_PRODUCT_URL, json, "Thêm sản phẩm", this::loadProducts);
         });
     }
 
     private void showEditProductDialog() {
-       // Logic tương tự showAddProductDialog nhưng fill sẵn dữ liệu và gọi UPDATE_PRODUCT_URL
-       ProductModel selected = productTable.getSelectionModel().getSelectedItem();
-       if(selected == null) { showAlert("Chưa chọn", "Chọn sản phẩm để sửa"); return; }
-       // Giản lược: Bạn có thể copy dialog ở trên và thêm field ID vào JSON
+        ProductModel selected = productTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Chưa chọn", "Chọn sản phẩm để sửa");
+            return;
+        }
     }
 
     private void deleteProduct() {
         ProductModel selected = productTable.getSelectionModel().getSelectedItem();
-        if (selected == null) { showAlert("Chưa chọn", "Vui lòng chọn sản phẩm để xóa"); return; }
+        if (selected == null) {
+            showAlert("Chưa chọn", "Vui lòng chọn sản phẩm để xóa");
+            return;
+        }
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Xóa sản phẩm");
         alert.setHeaderText("Xóa " + selected.getName() + "?");
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                String json = String.format("{\"product_id\": %d}", selected.getId());
+                String json = String.format("{\"id\": %d}", selected.getId());
                 sendPostRequest(DELETE_PRODUCT_URL, json, "Xóa sản phẩm", this::loadProducts);
             }
         });
     }
-    
+
     private void toggleProductAvailable() {
         ProductModel selected = productTable.getSelectionModel().getSelectedItem();
-        if (selected == null) { showAlert("Chưa chọn", "Vui lòng chọn sản phẩm"); return; }
-        // Đảo ngược trạng thái hiện tại
-        int newStatus = selected.getAvailable() ? 0 : 1; 
-        String json = String.format("{\"product_id\": %d, \"available\": %d}", selected.getId(), newStatus);
+        if (selected == null) {
+            showAlert("Chưa chọn", "Vui lòng chọn sản phẩm");
+            return;
+        }
+        int newStatus = selected.getAvailable() ? 0 : 1;
+        String json = String.format("{\"id\": %d, \"available\": %d}", selected.getId(), newStatus);
         sendPostRequest(TOGGLE_PRODUCT_AVAILABLE_URL, json, "Cập nhật trạng thái", this::loadProducts);
     }
 
     private void showUpdatePriceDialog() {
         ProductModel selected = productTable.getSelectionModel().getSelectedItem();
         if (selected == null) { showAlert("Chưa chọn", "Vui lòng chọn sản phẩm"); return; }
+        
         TextInputDialog dialog = new TextInputDialog(String.valueOf(selected.getPrice()));
         dialog.setTitle("Đổi giá");
         dialog.setHeaderText("Nhập giá mới cho: " + selected.getName());
         dialog.showAndWait().ifPresent(priceStr -> {
             try {
                 double price = Double.parseDouble(priceStr);
-                String json = String.format("{\"product_id\": %d, \"price\": %.0f}", selected.getId(), price);
+                String json = String.format("{\"id\": %d, \"price\": %.0f}", selected.getId(), price);
                 sendPostRequest(UPDATE_PRICE_URL, json, "Đổi giá", this::loadProducts);
             } catch (NumberFormatException e) { showAlert("Lỗi", "Giá phải là số"); }
         });
@@ -746,86 +800,100 @@ public class AdminDashboard extends Application {
         dialog.setTitle("Thêm nhân viên");
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         GridPane grid = new GridPane();
-        grid.setHgap(10); grid.setVgap(10);
+        grid.setHgap(10);
+        grid.setVgap(10);
         TextField nameField = new TextField();
         TextField userField = new TextField();
         PasswordField passField = new PasswordField();
         ComboBox<Integer> roleCombo = new ComboBox<>();
-        roleCombo.getItems().addAll(1, 2); // 1: Admin, 2: Employee (Example)
+        roleCombo.getItems().addAll(1, 2); // 1: Admin, 2: Employee
         roleCombo.setValue(2);
-        grid.add(new Label("Tên:"), 0, 0); grid.add(nameField, 1, 0);
-        grid.add(new Label("User:"), 0, 1); grid.add(userField, 1, 1);
-        grid.add(new Label("Pass:"), 0, 2); grid.add(passField, 1, 2);
-        grid.add(new Label("Role:"), 0, 3); grid.add(roleCombo, 1, 3);
+        grid.add(new Label("Tên:"), 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(new Label("User:"), 0, 1);
+        grid.add(userField, 1, 1);
+        grid.add(new Label("Pass:"), 0, 2);
+        grid.add(passField, 1, 2);
+        grid.add(new Label("Role:"), 0, 3);
+        grid.add(roleCombo, 1, 3);
         dialog.getDialogPane().setContent(grid);
         dialog.setResultConverter(btn -> {
             if (btn == ButtonType.OK) {
-                return String.format("{\"name\":\"%s\", \"username\":\"%s\", \"password\":\"%s\", \"role_id\":%d}",
+                return String.format("{\"employee_name\":\"%s\", \"username\":\"%s\", \"employee_password\":\"%s\", \"role_id\":%d}",
                         nameField.getText(), userField.getText(), passField.getText(), roleCombo.getValue());
             }
             return null;
         });
-        dialog.showAndWait().ifPresent(json -> sendPostRequest(ADD_EMPLOYEE_URL, json, "Thêm nhân viên", () -> { /*reload logic needed*/ }));
+        dialog.showAndWait().ifPresent(json -> sendPostRequest(ADD_EMPLOYEE_URL, json, "Thêm nhân viên", () -> {
+        }));
     }
 
     private void deleteEmployee() {
         EmployeeModel selected = employeeTable.getSelectionModel().getSelectedItem();
         if (selected == null) return;
-        String json = String.format("{\"employee_id\": %d}", selected.getId());
-        sendPostRequest(DELETE_EMPLOYEE_URL, json, "Xóa nhân viên", null); // Cần reload employee list
+        // SỬA: Dùng "id"
+        String json = String.format("{\"id\": %d}", selected.getId());
+        sendPostRequest(DELETE_EMPLOYEE_URL, json, "Xóa nhân viên", null); 
     }
 
     private void toggleEmployeeLock() {
         EmployeeModel selected = employeeTable.getSelectionModel().getSelectedItem();
         if (selected == null) return;
         String url = selected.getActive() ? LOCK_ACCOUNT_URL : UNLOCK_ACCOUNT_URL;
-        String json = String.format("{\"employee_id\": %d}", selected.getId());
-        sendPostRequest(url, json, "Khóa/Mở khóa", null); // Cần reload employee list
+        // SỬA: Dùng "id"
+        String json = String.format("{\"id\": %d}", selected.getId());
+        sendPostRequest(url, json, "Khóa/Mở khóa", null);
     }
 
     // --- Inventory ---
     private void showImportDialog() {
-        // Simple import dialog: Update quantity directly or add new shipment
-        // For simplicity, let's update quantity of selected item
         InventoryModel selected = inventoryTable.getSelectionModel().getSelectedItem();
-        if (selected == null) { showAlert("Lỗi", "Chọn nguyên liệu để nhập"); return; }
-        
+        if (selected == null) {
+            showAlert("Lỗi", "Chọn nguyên liệu để nhập");
+            return;
+        }
+
         TextInputDialog dialog = new TextInputDialog("0");
         dialog.setTitle("Nhập kho");
         dialog.setHeaderText("Nhập số lượng thêm cho: " + selected.getName());
         dialog.showAndWait().ifPresent(qtyStr -> {
             try {
                 double qty = Double.parseDouble(qtyStr);
-                // Assuming import.php takes id and quantity added
-                String json = String.format("{\"inventory_id\": %d, \"quantity\": %.2f, \"price\": 0}", selected.getId(), qty);
+                String json = String.format("{\"inventory_id\": %d, \"quantity\": %.2f, \"price\": 0}",
+                        selected.getId(), qty);
                 sendPostRequest(IMPORT_INVENTORY_URL, json, "Nhập kho", this::loadInventory);
-            } catch (Exception e) { showAlert("Lỗi", "Số lượng không hợp lệ"); }
+            } catch (Exception e) {
+                showAlert("Lỗi", "Số lượng không hợp lệ");
+            }
         });
     }
-    
-    private void showExportDialog() { /* Implement similar to Import but calling export API */ }
+
+    private void showExportDialog() {}
 
     // --- Coupons ---
     private void showAddCouponDialog() {
         Dialog<String> dialog = new Dialog<>();
         dialog.setTitle("Tạo mã giảm giá");
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
         GridPane grid = new GridPane();
         grid.setHgap(10); grid.setVgap(10);
         TextField codeField = new TextField();
-        ComboBox<String> typeCombo = new ComboBox<>(); typeCombo.getItems().addAll("percent", "fixed"); typeCombo.setValue("fixed");
+        ComboBox<String> typeCombo = new ComboBox<>();
+        typeCombo.getItems().addAll("percent", "amount"); 
+        typeCombo.setValue("amount");
         TextField valueField = new TextField();
         TextField limitField = new TextField("100");
-        
+
         grid.add(new Label("Mã:"), 0, 0); grid.add(codeField, 1, 0);
         grid.add(new Label("Loại:"), 0, 1); grid.add(typeCombo, 1, 1);
         grid.add(new Label("Giá trị:"), 0, 2); grid.add(valueField, 1, 2);
         grid.add(new Label("Giới hạn:"), 0, 3); grid.add(limitField, 1, 3);
-        
+
         dialog.getDialogPane().setContent(grid);
         dialog.setResultConverter(btn -> {
             if (btn == ButtonType.OK) {
-                return String.format("{\"code\":\"%s\", \"type\":\"%s\", \"value\":%s, \"usage_limit\":%s}",
+                return String.format("{\"code\":\"%s\", \"coupon_type\":\"%s\", \"coupon_value\":%s, \"usage_limit\":%s}",
                         codeField.getText(), typeCombo.getValue(), valueField.getText(), limitField.getText());
             }
             return null;
@@ -836,16 +904,23 @@ public class AdminDashboard extends Application {
     private void deleteCoupon() {
         CouponModel selected = couponTable.getSelectionModel().getSelectedItem();
         if (selected == null) return;
-        String json = String.format("{\"coupon_id\": %d}", selected.getId());
+        String json = String.format("{\"id\": %d}", selected.getId());
         sendPostRequest(DELETE_COUPON_URL, json, "Xóa mã", this::loadCoupons);
     }
+
     
-    private void showCouponUsageDialog() { /* Implement if needed */ }
-    private void showChangeRoleDialog() { /* Implement if needed */ }
-    private void showWorkingHoursDialog() { /* Implement if needed */ }
+
+    private void showCouponUsageDialog() {
+       }
+
+    private void showChangeRoleDialog() {
+       }
+
+    private void showWorkingHoursDialog() {
+       }
 
     // ==================== GENERIC API METHODS ====================
-    
+
     private void sendPostRequest(String url, String jsonBody, String actionName, Runnable onSuccess) {
         new Thread(() -> {
             try {
@@ -854,14 +929,15 @@ public class AdminDashboard extends Application {
                         .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                         .build();
                 HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-                
+
                 System.out.println(actionName + " Status: " + response.statusCode());
                 System.out.println("Response: " + response.body());
 
                 if (response.statusCode() == 200) {
                     Platform.runLater(() -> {
                         showAlert("Thành công", actionName + " thành công!");
-                        if (onSuccess != null) onSuccess.run();
+                        if (onSuccess != null)
+                            onSuccess.run();
                     });
                 } else {
                     Platform.runLater(() -> showAlert("Lỗi", "Thất bại: " + response.statusCode()));
@@ -881,9 +957,7 @@ public class AdminDashboard extends Application {
     }
 
     // ==================== LOAD DATA METHODS (EXISTING) ====================
-    // [Giữ nguyên các hàm loadCategories, loadProducts, loadInventory, loadCoupons, loadReport của bạn]
-    // Lưu ý: Đã sửa lại hàm loadReport ở dưới để hiển thị vào TextArea thay vì console
-    
+
     private void loadCategories() {
         new Thread(() -> {
             try {
@@ -896,10 +970,17 @@ public class AdminDashboard extends Application {
                     String obj = normalizeJsonObject(raw);
                     String idStr = firstNonBlank(extractJsonValue(obj, "id"), extractJsonValue(obj, "category_id"));
                     String name = firstNonBlank(extractJsonValue(obj, "name"), extractJsonValue(obj, "category_name"));
-                    if (name != null && !name.isBlank()) loaded.add(new CategoryModel(parseIntSafe(idStr), name));
+                    if (name != null && !name.isBlank())
+                        loaded.add(new CategoryModel(parseIntSafe(idStr), name));
                 }
-                Platform.runLater(() -> { categories.setAll(loaded); if (categoryTable != null) categoryTable.refresh(); });
-            } catch (Exception e) { e.printStackTrace(); }
+                Platform.runLater(() -> {
+                    categories.setAll(loaded);
+                    if (categoryTable != null)
+                        categoryTable.refresh();
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 
@@ -917,17 +998,27 @@ public class AdminDashboard extends Application {
                     String name = firstNonBlank(extractJsonValue(obj, "product_name"), extractJsonValue(obj, "name"));
                     String categoryIdStr = firstNonBlank(extractJsonValue(obj, "category_id"));
                     String categoryName = firstNonBlank(extractJsonValue(obj, "category_name"));
-                    String priceStr = firstNonBlank(extractJsonValue(obj, "price"), extractJsonValue(obj, "unit_price"));
-                    String availableStr = firstNonBlank(extractJsonValue(obj, "available"), extractJsonValue(obj, "is_available"));
+                    String priceStr = firstNonBlank(extractJsonValue(obj, "price"),
+                            extractJsonValue(obj, "unit_price"));
+                    String availableStr = firstNonBlank(extractJsonValue(obj, "available"),
+                            extractJsonValue(obj, "is_available"));
                     String hotStr = firstNonBlank(extractJsonValue(obj, "is_hot"));
-                    
+
                     if (name != null && !name.isBlank()) {
-                        loaded.add(new ProductModel(parseIntSafe(idStr), name, parseIntSafe(categoryIdStr), categoryName, 
-                                parseDoubleSafe(priceStr), parseBooleanInt(availableStr, true), parseBooleanInt(hotStr, false)));
+                        loaded.add(
+                                new ProductModel(parseIntSafe(idStr), name, parseIntSafe(categoryIdStr), categoryName,
+                                        parseDoubleSafe(priceStr), parseBooleanInt(availableStr, true),
+                                        parseBooleanInt(hotStr, false)));
                     }
                 }
-                Platform.runLater(() -> { products.setAll(loaded); if (productTable != null) productTable.refresh(); });
-            } catch (Exception e) { e.printStackTrace(); }
+                Platform.runLater(() -> {
+                    products.setAll(loaded);
+                    if (productTable != null)
+                        productTable.refresh();
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 
@@ -945,13 +1036,21 @@ public class AdminDashboard extends Application {
                     String qtyStr = firstNonBlank(extractJsonValue(obj, "quantity"), extractJsonValue(obj, "qty"));
                     String unit = firstNonBlank(extractJsonValue(obj, "unit"));
                     String status = firstNonBlank(extractJsonValue(obj, "status"));
-                    if (name != null && !name.isBlank()) loaded.add(new InventoryModel(parseIntSafe(idStr), name, parseDoubleSafe(qtyStr), unit, status));
+                    if (name != null && !name.isBlank())
+                        loaded.add(
+                                new InventoryModel(parseIntSafe(idStr), name, parseDoubleSafe(qtyStr), unit, status));
                 }
-                Platform.runLater(() -> { inventoryItems.setAll(loaded); if (inventoryTable != null) inventoryTable.refresh(); });
-            } catch (Exception e) { e.printStackTrace(); }
+                Platform.runLater(() -> {
+                    inventoryItems.setAll(loaded);
+                    if (inventoryTable != null)
+                        inventoryTable.refresh();
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }).start();
     }
-    
+
     private void loadCoupons() {
         new Thread(() -> {
             try {
@@ -967,13 +1066,21 @@ public class AdminDashboard extends Application {
                     String valueStr = firstNonBlank(extractJsonValue(obj, "value"));
                     String usageCountStr = firstNonBlank(extractJsonValue(obj, "usage_count"));
                     String usageLimitStr = firstNonBlank(extractJsonValue(obj, "usage_limit"));
-                    if (code != null && !code.isBlank()) loaded.add(new CouponModel(parseIntSafe(idStr), code, type, parseDoubleSafe(valueStr), parseIntSafe(usageCountStr), parseIntSafe(usageLimitStr)));
+                    if (code != null && !code.isBlank())
+                        loaded.add(new CouponModel(parseIntSafe(idStr), code, type, parseDoubleSafe(valueStr),
+                                parseIntSafe(usageCountStr), parseIntSafe(usageLimitStr)));
                 }
-                Platform.runLater(() -> { coupons.setAll(loaded); if (couponTable != null) couponTable.refresh(); });
-            } catch (Exception e) { e.printStackTrace(); }
+                Platform.runLater(() -> {
+                    coupons.setAll(loaded);
+                    if (couponTable != null)
+                        couponTable.refresh();
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }).start();
     }
-    
+
     private void loadLowStockAlerts(Label alertLabel) {
         new Thread(() -> {
             try {
@@ -986,13 +1093,16 @@ public class AdminDashboard extends Application {
                     String name = firstNonBlank(extractJsonValue(obj, "name"), extractJsonValue(obj, "inventory_name"));
                     String qtyStr = firstNonBlank(extractJsonValue(obj, "quantity"), extractJsonValue(obj, "qty"));
                     if (name != null && !name.isBlank()) {
-                         if (!sb.isEmpty()) sb.append(", ");
-                         sb.append(name).append(" (").append(qtyStr).append(")");
+                        if (!sb.isEmpty())
+                            sb.append(", ");
+                        sb.append(name).append(" (").append(qtyStr).append(")");
                     }
                 }
                 String text = sb.isEmpty() ? "Không có cảnh báo" : "Sắp hết: " + sb.toString();
                 Platform.runLater(() -> alertLabel.setText(text));
-            } catch (Exception e) { e.printStackTrace(); }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 
@@ -1000,13 +1110,20 @@ public class AdminDashboard extends Application {
         new Thread(() -> {
             try {
                 String url = "";
-                if (type.contains("ngày")) url = REVENUE_BY_DAY_URL + "?date=" + date.toString();
-                else if (type.contains("tuần")) url = REVENUE_BY_WEEK_URL + "?year=" + year + "&week=" + (date.getDayOfYear() / 7);
-                else if (type.contains("tháng")) url = REVENUE_BY_MONTH_URL + "?year=" + year + "&month=" + month;
-                else if (type.contains("ca")) url = REVENUE_BY_SHIFT_URL + "?date=" + date.toString();
-                else if (type.contains("Món bán chạy")) url = BEST_SELLING_PRODUCTS_URL + "?year=" + year + "&month=" + month;
-                else if (type.contains("khách")) url = CUSTOMER_COUNT_URL + "?year=" + year + "&month=" + month;
-                else if (type.contains("Chi phí")) url = EXPENSES_URL + "?year=" + year + "&month=" + month;
+                if (type.contains("ngày"))
+                    url = REVENUE_BY_DAY_URL + "?date=" + date.toString();
+                else if (type.contains("tuần"))
+                    url = REVENUE_BY_WEEK_URL + "?year=" + year + "&week=" + (date.getDayOfYear() / 7);
+                else if (type.contains("tháng"))
+                    url = REVENUE_BY_MONTH_URL + "?year=" + year + "&month=" + month;
+                else if (type.contains("ca"))
+                    url = REVENUE_BY_SHIFT_URL + "?date=" + date.toString();
+                else if (type.contains("Món bán chạy"))
+                    url = BEST_SELLING_PRODUCTS_URL + "?year=" + year + "&month=" + month;
+                else if (type.contains("khách"))
+                    url = CUSTOMER_COUNT_URL + "?year=" + year + "&month=" + month;
+                else if (type.contains("Chi phí"))
+                    url = EXPENSES_URL + "?year=" + year + "&month=" + month;
 
                 if (!url.isEmpty()) {
                     HttpRequest request = HttpRequest.newBuilder(URI.create(url)).GET().build();
@@ -1014,50 +1131,87 @@ public class AdminDashboard extends Application {
                     String display = extractReportDisplay(response.body());
                     Platform.runLater(() -> reportDisplayArea.setText(display));
                 }
-            } catch (Exception e) { Platform.runLater(() -> reportDisplayArea.setText("Lỗi: " + e.getMessage())); }
+            } catch (Exception e) {
+                Platform.runLater(() -> reportDisplayArea.setText("Lỗi: " + e.getMessage()));
+            }
         }).start();
     }
 
     // ==================== PARSER HELPERS ====================
-    // [Giữ nguyên code extractDataArrayObjects, normalizeJsonObject, firstNonBlank, etc. của bạn]
     private String[] extractDataArrayObjects(String body) {
-        if (body == null || body.isBlank()) return new String[0];
+        if (body == null || body.isBlank())
+            return new String[0];
         int dataIdx = body.indexOf("\"data\"");
-        if (dataIdx < 0) return new String[0];
+        if (dataIdx < 0)
+            return new String[0];
         int arrayStart = body.indexOf('[', dataIdx);
         int arrayEnd = body.indexOf(']', arrayStart);
-        if (arrayStart < 0 || arrayEnd < 0) return new String[0];
+        if (arrayStart < 0 || arrayEnd < 0)
+            return new String[0];
         String dataArray = body.substring(arrayStart + 1, arrayEnd);
-        if (dataArray.isBlank()) return new String[0];
+        if (dataArray.isBlank())
+            return new String[0];
         return dataArray.split("\\},\\s*\\{");
     }
+
     private String normalizeJsonObject(String raw) {
         String obj = raw.trim();
-        if (!obj.startsWith("{")) obj = "{" + obj;
-        if (!obj.endsWith("}")) obj = obj + "}";
+        if (!obj.startsWith("{"))
+            obj = "{" + obj;
+        if (!obj.endsWith("}"))
+            obj = obj + "}";
         return obj;
     }
+
     private String firstNonBlank(String... values) {
-        for (String v : values) if (v != null && !v.isBlank()) return v;
+        for (String v : values)
+            if (v != null && !v.isBlank())
+                return v;
         return "";
     }
-    private int parseIntSafe(String raw) { try { return Integer.parseInt(raw.replace("\"", "").trim()); } catch (Exception e) { return 0; } }
-    private double parseDoubleSafe(String raw) { try { return Double.parseDouble(raw.replace("\"", "").trim()); } catch (Exception e) { return 0.0; } }
+
+    private int parseIntSafe(String raw) {
+        try {
+            return Integer.parseInt(raw.replace("\"", "").trim());
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    private double parseDoubleSafe(String raw) {
+        try {
+            return Double.parseDouble(raw.replace("\"", "").trim());
+        } catch (Exception e) {
+            return 0.0;
+        }
+    }
+
     private boolean parseBooleanInt(String raw, boolean def) {
-        if (raw == null) return def; String v = raw.replace("\"", "").trim();
-        if ("1".equals(v) || "true".equalsIgnoreCase(v)) return true;
-        if ("0".equals(v) || "false".equalsIgnoreCase(v)) return false;
+        if (raw == null)
+            return def;
+        String v = raw.replace("\"", "").trim();
+        if ("1".equals(v) || "true".equalsIgnoreCase(v))
+            return true;
+        if ("0".equals(v) || "false".equalsIgnoreCase(v))
+            return false;
         return def;
     }
-    private String extractReportDisplay(String body) { return body; } // Simplified for now
+
+    private String extractReportDisplay(String body) {
+        return body;
+    } // Simplified for now
+
     private String extractJsonValue(String json, String key) {
-        if (json == null || json.isEmpty()) return "";
+        if (json == null || json.isEmpty())
+            return "";
         String pattern = "\"" + key + "\"";
         int start = json.indexOf(pattern);
-        if (start < 0) return "";
+        if (start < 0)
+            return "";
         int valStart = json.indexOf(":", start) + 1;
         int valEnd = json.indexOf(",", valStart);
-        if (valEnd < 0) valEnd = json.indexOf("}", valStart);
+        if (valEnd < 0)
+            valEnd = json.indexOf("}", valStart);
         if (valStart > 0 && valEnd > valStart) {
             return json.substring(valStart, valEnd).replace("\"", "").trim();
         }
@@ -1065,53 +1219,227 @@ public class AdminDashboard extends Application {
     }
 
     // ==================== MODEL CLASSES ====================
-    // [Giữ nguyên Model Classes: CategoryModel, ProductModel, etc.]
     public static class CategoryModel {
-        private final int id; private final String name;
-        public CategoryModel(int id, String name) { this.id = id; this.name = name; }
-        public int getId() { return id; } public String getName() { return name; }
-        @Override public String toString() { return name; }
-    }
-    public static class ProductModel {
-        private final int id; private final String name; private final int categoryId; private final String categoryName; private final double price; private final boolean available; private final boolean isHot;
-        public ProductModel(int id, String name, int categoryId, String categoryName, double price, boolean available, boolean isHot) {
-            this.id = id; this.name = name; this.categoryId = categoryId; this.categoryName = categoryName; this.price = price; this.available = available; this.isHot = isHot;
+        private final int id;
+        private final String name;
+
+        public CategoryModel(int id, String name) {
+            this.id = id;
+            this.name = name;
         }
-        public int getId() { return id; } public String getName() { return name; } public String getCategoryName() { return categoryName; } public double getPrice() { return price; } public boolean getAvailable() { return available; }
+
+        public int getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
+
+    public static class ProductModel {
+        private final int id;
+        private final String name;
+        private final int categoryId;
+        private final String categoryName;
+        private final double price;
+        private final boolean available;
+        private final boolean isHot;
+
+        public ProductModel(int id, String name, int categoryId, String categoryName, double price, boolean available,
+                boolean isHot) {
+            this.id = id;
+            this.name = name;
+            this.categoryId = categoryId;
+            this.categoryName = categoryName;
+            this.price = price;
+            this.available = available;
+            this.isHot = isHot;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getCategoryName() {
+            return categoryName;
+        }
+
+        public double getPrice() {
+            return price;
+        }
+
+        public boolean getAvailable() {
+            return available;
+        }
+    }
+
     public static class EmployeeModel {
-        private final int id; private final String name; private final String username; private final int roleId; private final boolean active;
-        public EmployeeModel(int id, String name, String username, int roleId, boolean active) { this.id = id; this.name = name; this.username = username; this.roleId = roleId; this.active = active; }
-        public int getId() { return id; } public String getName() { return name; } public String getUsername() { return username; } public int getRoleId() { return roleId; } public boolean getActive() { return active; }
+        private final int id;
+        private final String name;
+        private final String username;
+        private final int roleId;
+        private final boolean active;
+
+        public EmployeeModel(int id, String name, String username, int roleId, boolean active) {
+            this.id = id;
+            this.name = name;
+            this.username = username;
+            this.roleId = roleId;
+            this.active = active;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public int getRoleId() {
+            return roleId;
+        }
+
+        public boolean getActive() {
+            return active;
+        }
     }
+
     public static class InventoryModel {
-        private final int id; private final String name; private final double quantity; private final String unit; private final String status;
-        public InventoryModel(int id, String name, double quantity, String unit, String status) { this.id = id; this.name = name; this.quantity = quantity; this.unit = unit; this.status = status; }
-        public int getId() { return id; } public String getName() { return name; } public double getQuantity() { return quantity; } public String getUnit() { return unit; } public String getStatus() { return status; }
+        private final int id;
+        private final String name;
+        private final double quantity;
+        private final String unit;
+        private final String status;
+
+        public InventoryModel(int id, String name, double quantity, String unit, String status) {
+            this.id = id;
+            this.name = name;
+            this.quantity = quantity;
+            this.unit = unit;
+            this.status = status;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public double getQuantity() {
+            return quantity;
+        }
+
+        public String getUnit() {
+            return unit;
+        }
+
+        public String getStatus() {
+            return status;
+        }
     }
+
     public static class CouponModel {
-        private final int id; private final String code; private final String type; private final double value; private final int usageCount; private final int usageLimit;
-        public CouponModel(int id, String code, String type, double value, int usageCount, int usageLimit) { this.id = id; this.code = code; this.type = type; this.value = value; this.usageCount = usageCount; this.usageLimit = usageLimit; }
-        public int getId() { return id; } public String getCode() { return code; } public String getType() { return type; } public double getValue() { return value; } public String getUsageDisplay() { return usageCount + "/" + usageLimit; }
+        private final int id;
+        private final String code;
+        private final String type;
+        private final double value;
+        private final int usageCount;
+        private final int usageLimit;
+
+        public CouponModel(int id, String code, String type, double value, int usageCount, int usageLimit) {
+            this.id = id;
+            this.code = code;
+            this.type = type;
+            this.value = value;
+            this.usageCount = usageCount;
+            this.usageLimit = usageLimit;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public double getValue() {
+            return value;
+        }
+
+        public String getUsageDisplay() {
+            return usageCount + "/" + usageLimit;
+        }
     }
+
     public static class PaymentRecord {
-        private final String time; private final String table; private final double amount; private final String method;
-        public PaymentRecord(String time, String table, double amount, String method) { this.time = time; this.table = table; this.amount = amount; this.method = method; }
-        public String getTime() { return time; } public String getTable() { return table; } public double getAmount() { return amount; } public String getMethod() { return method; }
+        private final String time;
+        private final String table;
+        private final double amount;
+        private final String method;
+
+        public PaymentRecord(String time, String table, double amount, String method) {
+            this.time = time;
+            this.table = table;
+            this.amount = amount;
+            this.method = method;
+        }
+
+        public String getTime() {
+            return time;
+        }
+
+        public String getTable() {
+            return table;
+        }
+
+        public double getAmount() {
+            return amount;
+        }
+
+        public String getMethod() {
+            return method;
+        }
     }
 
     private Button createPrimaryButton(String text) {
         Button button = new Button(text);
-        button.setStyle("-fx-background-color:#F2C57C;-fx-background-radius:14;-fx-text-fill:#6B4C3B;-fx-font-weight:bold;-fx-padding:12 18;-fx-cursor:hand;");
-        return button;
-    }
-    private Button createGhostButton(String text) {
-        Button button = new Button(text);
-        button.setStyle("-fx-background-color:transparent;-fx-border-color:rgba(107,76,59,0.4);-fx-border-radius:14;-fx-text-fill:#6B4C3B;-fx-padding:10 16;-fx-cursor:hand;");
+        button.setStyle(
+                "-fx-background-color:#F2C57C;-fx-background-radius:14;-fx-text-fill:#6B4C3B;-fx-font-weight:bold;-fx-padding:12 18;-fx-cursor:hand;");
         return button;
     }
 
-    public static void main(String[] args) { launch(args); }
+    private Button createGhostButton(String text) {
+        Button button = new Button(text);
+        button.setStyle(
+                "-fx-background-color:transparent;-fx-border-color:rgba(107,76,59,0.4);-fx-border-radius:14;-fx-text-fill:#6B4C3B;-fx-padding:10 16;-fx-cursor:hand;");
+        return button;
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
 
     private void handleLogout(Stage currentStage) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -1121,7 +1449,6 @@ public class AdminDashboard extends Application {
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                // 1. Gọi API Logout (Optional - tuỳ backend có cần clear session không)
                 new Thread(() -> {
                     try {
                         HttpRequest request = HttpRequest.newBuilder(URI.create(LOGOUT_URL))
@@ -1133,11 +1460,10 @@ public class AdminDashboard extends Application {
                     }
                 }).start();
 
-                // 2. Chuyển về màn hình Login
                 Platform.runLater(() -> {
                     try {
-                        new LoginPage().start(new Stage()); // Mở màn hình Login
-                        currentStage.close(); // Đóng Dashboard hiện tại
+                        new LoginPage().start(new Stage()); 
+                        currentStage.close(); 
                     } catch (Exception e) {
                         e.printStackTrace();
                         showAlert("Lỗi", "Không thể mở màn hình đăng nhập: " + e.getMessage());
@@ -1147,4 +1473,3 @@ public class AdminDashboard extends Application {
         });
     }
 }
-
