@@ -24,8 +24,6 @@ import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
-import java.util.Map;
-import java.util.HashMap;
 
 public class AdminDashboard extends Application {
 
@@ -49,7 +47,7 @@ public class AdminDashboard extends Application {
     private static final String UPDATE_PRICE_URL = BASE_URL + "update_price.php";
     private static final String UPDATE_HOT_PRODUCT_URL = BASE_URL + "update-hot-product.php";
 
-    // Employees - Note: Cần có API get-list, tạm thời dùng endpoint có sẵn
+    // Employees
     private static final String ADD_EMPLOYEE_URL = BASE_URL + "add_employee.php";
     private static final String UPDATE_EMPLOYEE_URL = BASE_URL + "update_employee.php";
     private static final String DELETE_EMPLOYEE_URL = BASE_URL + "delete_employee.php";
@@ -102,6 +100,7 @@ public class AdminDashboard extends Application {
     private ComboBox<String> filterMethodCombo;
     private ComboBox<String> dateRangeCombo;
     private Label reportDisplayLabel;
+    
     // Menu Tab Data
     private ObservableList<CategoryModel> categories = FXCollections.observableArrayList();
     private ObservableList<ProductModel> products = FXCollections.observableArrayList();
@@ -229,7 +228,7 @@ public class AdminDashboard extends Application {
         VBox monthlyCard = createStatCard("Tháng này", "0", "#6B4C3B");
         monthlyRevenueLabel = (Label) monthlyCard.getChildren().get(1);
 
-        // Payment Method Cards - Separate cards for each method
+        // Payment Method Cards
         VBox cashCard = createStatCard("Tiền mặt", "0", "#6B4C3B");
         cashLabel = (Label) cashCard.getChildren().get(1);
 
@@ -490,7 +489,7 @@ public class AdminDashboard extends Application {
         weeklyRevenueLabel.setText(currency.format(weeklyRevenue));
         monthlyRevenueLabel.setText(currency.format(monthlyRevenue));
 
-        // Payment method breakdown - calculate revenue for each method
+        // Payment method breakdown
         double cashRevenue = allPayments.stream()
                 .filter(p -> p.getMethod().equals("Tiền mặt"))
                 .mapToDouble(PaymentRecord::getAmount)
@@ -528,7 +527,7 @@ public class AdminDashboard extends Application {
     }
 
     private void exportData() {
-        // Simple export functionality - in real app, you'd export to CSV/Excel
+        // Simple export functionality
         StringBuilder sb = new StringBuilder();
         sb.append("Thời gian,Bàn,Phương thức,Số tiền\n");
         for (PaymentRecord p : filteredPayments) {
@@ -538,7 +537,6 @@ public class AdminDashboard extends Application {
         System.out.println("=== EXPORT DATA ===");
         System.out.println(sb.toString());
         System.out.println("===================");
-        // In a real implementation, you could save to file or show a dialog
     }
 
     private Button createPrimaryButton(String text) {
@@ -571,10 +569,6 @@ public class AdminDashboard extends Application {
                         + "-fx-border-radius:14;-fx-text-fill:#6B4C3B;-fx-padding:10 16;"
                         + "-fx-cursor:hand;"));
         return button;
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 
     // ==================== MENU TAB ====================
@@ -803,12 +797,6 @@ public class AdminDashboard extends Application {
         // Load alerts
         loadLowStockAlerts(alertLabel);
 
-        inventoryTab.getChildren().addAll(title, alertPanel, inventoryTable, btnBox);
-        VBox.setVgrow(inventoryTable, Priority.ALWAYS);
-
-        // Load alerts
-        loadLowStockAlerts(alertLabel);
-
         return inventoryTab;
     }
 
@@ -832,9 +820,7 @@ public class AdminDashboard extends Application {
         TableColumn<CouponModel, Double> cValueCol = new TableColumn<>("Giá trị");
         cValueCol.setCellValueFactory(new PropertyValueFactory<>("value"));
 
-        TableColumn<CouponModel, Integer> cUsageCol = new TableColumn<>("Đã dùng/Limit");
         TableColumn<CouponModel, String> cUsageCol = new TableColumn<>("Đã dùng/Limit");
-
         cUsageCol.setCellValueFactory(new PropertyValueFactory<>("usageDisplay"));
 
         couponTable.getColumns().addAll(cCodeCol, cTypeCol, cValueCol, cUsageCol);
@@ -889,11 +875,6 @@ public class AdminDashboard extends Application {
 
         Button loadBtn = createPrimaryButton("📊 Tải báo cáo");
 
-        loadBtn.setOnAction(e -> loadReport(reportTypeCombo.getValue(), datePicker.getValue(),
-                monthCombo.getSelectionModel().getSelectedIndex() + 1, yearCombo.getValue()));
-
-        selectorBox.getChildren().addAll(new Label("Loại báo cáo:"), reportTypeCombo,
-                new Label("Ngày:"), datePicker, new Label("Tháng:"), monthCombo,
         loadBtn.setOnAction(e -> loadReport(reportTypeCombo.getValue(), datePicker.getValue(),
                 monthCombo.getSelectionModel().getSelectedIndex() + 1, yearCombo.getValue()));
 
@@ -1112,14 +1093,6 @@ public class AdminDashboard extends Application {
                 HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
                 String body = response.body();
-                if (body.contains("\"success\"") && body.contains("\"data\"")) {
-                    // Parse JSON và update categories list
-                    // TODO: Implement JSON parsing
-                    Platform.runLater(() -> {
-                        // Update UI
-                    });
-                }
-
                 String[] items = extractDataArrayObjects(body);
                 if (items.length == 0) {
                     Platform.runLater(() -> categories.clear());
@@ -1208,9 +1181,6 @@ public class AdminDashboard extends Application {
                 HttpRequest request = HttpRequest.newBuilder(URI.create(GET_INVENTORY_LIST_URL)).GET().build();
                 HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-                // Parse và update inventoryItems
-                Platform.runLater(() -> {
-                    inventoryTable.refresh();
                 String body = response.body();
                 String[] items = extractDataArrayObjects(body);
                 if (items.length == 0) {
@@ -1367,9 +1337,8 @@ public class AdminDashboard extends Application {
                     String body = response.body();
                     String display = extractReportDisplay(body);
                     Platform.runLater(() -> {
-                        if (reportDisplayLabel != null) {
-                            reportDisplayLabel.setText(display);
-                        }
+                        // TODO: Implement report display logic
+                        System.out.println("Report: " + display);
                     });
                 }
             } catch (Exception e) {
@@ -1378,8 +1347,7 @@ public class AdminDashboard extends Application {
         }).start();
     }
 
-    // ==================== DIALOG METHODS (Placeholder - cần implement chi tiết)
-    // ====================
+    // ==================== DIALOG METHODS ====================
     private void showAddCategoryDialog() {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Thêm danh mục");
@@ -1400,7 +1368,7 @@ public class AdminDashboard extends Application {
     }
 
     private void showAddProductDialog() {
-        // TODO: Implement form dialog với các fields: name, category, price, image
+        // TODO: Implement
     }
 
     private void showEditProductDialog() {
@@ -1412,15 +1380,15 @@ public class AdminDashboard extends Application {
     }
 
     private void toggleProductAvailable() {
-        // TODO: Call toggle_product_available.php
+        // TODO: Implement
     }
 
     private void showUpdatePriceDialog() {
-        // TODO: Implement price update dialog
+        // TODO: Implement
     }
 
     private void showAddEmployeeDialog() {
-        // TODO: Implement form với: name, username, password, role, phone
+        // TODO: Implement
     }
 
     private void showEditEmployeeDialog() {
@@ -1432,27 +1400,27 @@ public class AdminDashboard extends Application {
     }
 
     private void showChangeRoleDialog() {
-        // TODO: Implement role change dialog
+        // TODO: Implement
     }
 
     private void toggleEmployeeLock() {
-        // TODO: Call lock-account.php or unlock-account.php
+        // TODO: Implement
     }
 
     private void showWorkingHoursDialog() {
-        // TODO: Load và hiển thị working hours từ get-working-hours.php
+        // TODO: Implement
     }
 
     private void showImportDialog() {
-        // TODO: Implement import dialog với inventory_id, quantity, note
+        // TODO: Implement
     }
 
     private void showExportDialog() {
-        // TODO: Implement export dialog
+        // TODO: Implement
     }
 
     private void showAddCouponDialog() {
-        // TODO: Implement form với: code, type, value, min_order, dates, limit
+        // TODO: Implement
     }
 
     private void showEditCouponDialog() {
@@ -1464,7 +1432,7 @@ public class AdminDashboard extends Application {
     }
 
     private void showCouponUsageDialog() {
-        // TODO: Load và hiển thị usage history từ get-usage.php
+        // TODO: Implement
     }
 
     // ==================== JSON PARSER HELPER ====================
@@ -1615,5 +1583,9 @@ public class AdminDashboard extends Application {
         public String getMethod() {
             return method;
         }
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 }
