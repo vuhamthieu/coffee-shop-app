@@ -24,6 +24,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -90,6 +91,7 @@ public class App extends Application {
     private static final String UPDATE_INVENTORY_STATUS_URL = "http://localhost:8080/backend/api/employee/update-inventory-status.php";
     private static final String UPDATE_PRODUCT_AVAILABLE_URL = "http://localhost:8080/backend/api/employee/update-product-available.php";
     private static final String UPDATE_TABLE_STATUS_URL = "http://localhost:8080/backend/api/employee/update-table-status.php";
+    private static final String LOGOUT_URL = "http://localhost:8080/backend/api/employee/logout.php";
     // id order hiện tại, được set sau khi gọi create-order
     private int currentOrderId = -1;
     private final HttpClient httpClient = HttpClient.newHttpClient();
@@ -111,9 +113,12 @@ public class App extends Application {
         root.setPadding(new Insets(8, 24, 16, 24));
         root.setStyle("-fx-background-color:#F5F0E1;-fx-font-family:'Segoe UI',sans-serif;");
 
-        TabPane tabs = buildTabs();
+        // Header với nút đăng xuất
+        VBox header = buildHeader();
+        root.setTop(header);
 
-        root.setTop(tabs);
+        TabPane tabs = buildTabs();
+        root.setCenter(tabs);
 
         Scene scene = new Scene(root, 1400, 820);
         primaryStage.setTitle("Coffee Aura");
@@ -155,6 +160,32 @@ public class App extends Application {
         statsTab.setStyle("-fx-background-color:#6B4C3B; -fx-text-base-color:#F5F0E1; -fx-font-weight:bold;");
 
         return tabPane;
+    }
+
+    private VBox buildHeader() {
+        Label title = new Label("☕ Coffee Aura - Dashboard");
+        title.setStyle("-fx-text-fill:#6B4C3B;-fx-font-size:28px;-fx-font-weight:bold;");
+
+        javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Button logoutBtn = new Button("🚪 Đăng xuất");
+        logoutBtn.setStyle("-fx-background-color:#D32F2F;-fx-text-fill:white;-fx-font-weight:bold;"
+                + "-fx-background-radius:10;-fx-cursor:hand;-fx-padding: 8 15;");
+
+        logoutBtn.setOnMouseEntered(e -> logoutBtn.setStyle("-fx-background-color:#B71C1C;-fx-text-fill:white;"
+                + "-fx-font-weight:bold;-fx-background-radius:10;-fx-cursor:hand;-fx-padding: 8 15;"));
+        logoutBtn.setOnMouseExited(e -> logoutBtn.setStyle("-fx-background-color:#D32F2F;-fx-text-fill:white;"
+                + "-fx-font-weight:bold;-fx-background-radius:10;-fx-cursor:hand;-fx-padding: 8 15;"));
+
+        logoutBtn.setOnAction(e -> handleLogout((Stage) logoutBtn.getScene().getWindow()));
+
+        HBox headerBox = new HBox(15);
+        headerBox.setAlignment(Pos.CENTER_LEFT);
+        headerBox.getChildren().addAll(title, spacer, logoutBtn);
+        headerBox.setPadding(new Insets(10, 20, 15, 10));
+
+        return new VBox(headerBox);
     }
 
     private VBox buildOrderWorkspace() {
@@ -806,6 +837,38 @@ public class App extends Application {
         alert.setHeaderText(title);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private void handleLogout(Stage currentStage) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Xác nhận đăng xuất");
+        alert.setHeaderText(null);
+        alert.setContentText("Bạn có chắc chắn muốn đăng xuất?");
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                new Thread(() -> {
+                    try {
+                        HttpRequest request = HttpRequest.newBuilder(URI.create(LOGOUT_URL))
+                                .POST(HttpRequest.BodyPublishers.noBody())
+                                .build();
+                        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                    } catch (Exception ex) {
+                        System.err.println("Logout API failed: " + ex.getMessage());
+                    }
+                }).start();
+
+                Platform.runLater(() -> {
+                    try {
+                        new LoginPage().start(new Stage());
+                        currentStage.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        showWarning("Lỗi", "Không thể mở màn hình đăng nhập: " + e.getMessage());
+                    }
+                });
+            }
+        });
     }
 
     private Button createPrimaryButton(String text) {

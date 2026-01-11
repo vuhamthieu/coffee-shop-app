@@ -44,6 +44,7 @@ public class LoginPage extends Application {
         Scene scene = new Scene(root, 900, 650);
         primaryStage.setTitle("Coffee Shop - Employee Management");
         primaryStage.setScene(scene);
+        primaryStage.setMaximized(true);
         primaryStage.show();
     }
 
@@ -268,58 +269,12 @@ public class LoginPage extends Application {
 
         separatorBox.getChildren().addAll(leftSep, midSep, rightSep);
 
-        // Nút Check In/Out - KHÔNG CẦN ĐĂNG NHẬP
-        Button checkButton = new Button("Check In/Out");
-
-        // Style cố định cho button
-        checkButton.setStyle("-fx-background-color: " + ACCENT_COLOR + ";" +
-                "-fx-text-fill: " + TEXT_COLOR + ";" +
-                "-fx-font-weight: bold;" +
-                "-fx-font-size: 16;" +
-                "-fx-background-radius: 10;" +
-                "-fx-padding: 15 40 15 40;" +
-                "-fx-cursor: hand;" +
-                "-fx-effect: dropshadow(gaussian, rgba(242,197,124,0.3), 12, 0, 0, 4);");
-
-        // Hover effect
-        checkButton.setOnMouseEntered(e -> {
-            checkButton.setStyle("-fx-background-color: #E6B650;" +
-                    "-fx-text-fill: " + TEXT_COLOR + ";" +
-                    "-fx-font-weight: bold;" +
-                    "-fx-font-size: 16;" +
-                    "-fx-background-radius: 10;" +
-                    "-fx-padding: 15 40 15 40;" +
-                    "-fx-cursor: hand;" +
-                    "-fx-effect: dropshadow(gaussian, rgba(230,182,80,0.4), 15, 0, 0, 5);");
-        });
-
-        checkButton.setOnMouseExited(e -> {
-            checkButton.setStyle("-fx-background-color: " + ACCENT_COLOR + ";" +
-                    "-fx-text-fill: " + TEXT_COLOR + ";" +
-                    "-fx-font-weight: bold;" +
-                    "-fx-font-size: 16;" +
-                    "-fx-background-radius: 10;" +
-                    "-fx-padding: 15 40 15 40;" +
-                    "-fx-cursor: hand;" +
-                    "-fx-effect: dropshadow(gaussian, rgba(242,197,124,0.3), 12, 0, 0, 4);");
-        });
-
-        // Xử lý khi click - chạy file Python (KHÔNG CẦN KIỂM TRA ĐĂNG NHẬP)
-        checkButton.setOnAction(e -> {
-            // Chạy file Python ngay lập tức
-            runPythonScript();
-
-            // Hiển thị thông báo
-            showAlert("Thông báo", "Hệ thống AI đang chạy nhận diện khuôn mặt...");
-        });
-
         // Footer note đơn giản
         Label footerNote = new Label("Coffee Beans Cafe");
         footerNote.setFont(Font.font("Segoe UI", 12));
         footerNote.setTextFill(Color.web("#8C7C6C"));
 
-        // CHỈ CÒN separator, button và footer note (ĐÃ BỎ DÒNG HƯỚNG DẪN)
-        footer.getChildren().addAll(separatorBox, checkButton, footerNote);
+        footer.getChildren().addAll(separatorBox, footerNote);
         return footer;
     }
 
