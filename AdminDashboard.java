@@ -31,8 +31,8 @@ import java.util.Optional;
 public class AdminDashboard extends Application {
 
     // Base URL for Admin API
-    private static final String BASE_URL = "http://localhost/coffee-shop-app/backend/api/admin/";
-    private static final String BASE_EMPLOYEE_URL = "http://localhost/coffee-shop-app/backend/api/employee/";
+    private static final String BASE_URL = "http://localhost:8080/coffee-shop-app/backend/api/admin/";
+    private static final String BASE_EMPLOYEE_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/";
     // API Endpoints
     // Categories
     private static final String GET_CATEGORIES_URL = BASE_EMPLOYEE_URL + "get-categories.php";
@@ -57,7 +57,7 @@ public class AdminDashboard extends Application {
     private static final String LOCK_ACCOUNT_URL = BASE_URL + "employees/lock-account.php";
     private static final String UNLOCK_ACCOUNT_URL = BASE_URL + "employees/unlock-account.php";
     private static final String GET_WORKING_HOURS_URL = BASE_URL + "employees/get-working-hours.php";
-    private static final String GET_EMPLOYEES_URL = BASE_URL + "get-employees.php";
+    private static final String GET_EMPLOYEES_URL = BASE_URL + "get_employee.php";
 
     // Inventory
     private static final String GET_INVENTORY_LIST_URL = BASE_URL + "inventory/get-list.php";
@@ -788,7 +788,7 @@ public class AdminDashboard extends Application {
         dialog.showAndWait().ifPresent(result -> {
             if (result != null) {
                 String json = String.format(
-                    "{\"id\": %d, \"name\": \"%s\", \"price\": %.0f}",
+                    "{\"id\": %d, \"product_name\": \"%s\", \"price\": %.0f}",
                     selected.getId(),
                     result.getKey().replace("\"", "\\\""),
                     result.getValue()
@@ -982,11 +982,17 @@ public class AdminDashboard extends Application {
     }
 
     private void deleteCoupon() {
-        CouponModel selected = couponTable.getSelectionModel().getSelectedItem();
-        if (selected == null) return;
-        String json = String.format("{\"id\": %d}", selected.getId());
-        sendPostRequest(DELETE_COUPON_URL, json, "Xóa mã", this::loadCoupons);
-    }
+    CouponModel selected = couponTable.getSelectionModel().getSelectedItem();
+    if (selected == null) return;
+
+    String json = String.format(
+        "{\"coupon_id\": %d}", 
+        selected.getId()
+    );
+
+    sendPostRequest(DELETE_COUPON_URL, json, "Xóa mã", this::loadCoupons);
+}
+
 
     
 
@@ -1115,7 +1121,7 @@ public class AdminDashboard extends Application {
                     String name = firstNonBlank(extractJsonValue(obj, "name"), extractJsonValue(obj, "inventory_name"));
                     String qtyStr = firstNonBlank(extractJsonValue(obj, "quantity"), extractJsonValue(obj, "qty"));
                     String unit = firstNonBlank(extractJsonValue(obj, "unit"));
-                    String status = firstNonBlank(extractJsonValue(obj, "status"));
+                    String status = firstNonBlank(extractJsonValue(obj, "status"), extractJsonValue(obj, "inventory_status"));
                     if (name != null && !name.isBlank())
                         loaded.add(
                                 new InventoryModel(parseIntSafe(idStr), name, parseDoubleSafe(qtyStr), unit, status));
@@ -1142,8 +1148,8 @@ public class AdminDashboard extends Application {
                     String obj = normalizeJsonObject(raw);
                     String idStr = firstNonBlank(extractJsonValue(obj, "id"), extractJsonValue(obj, "coupon_id"));
                     String code = firstNonBlank(extractJsonValue(obj, "code"));
-                    String type = firstNonBlank(extractJsonValue(obj, "type"));
-                    String valueStr = firstNonBlank(extractJsonValue(obj, "value"));
+                    String type = firstNonBlank(extractJsonValue(obj, "coupon_type"));
+                    String valueStr = firstNonBlank(extractJsonValue(obj, "coupon_value"));
                     String usageCountStr = firstNonBlank(extractJsonValue(obj, "usage_count"));
                     String usageLimitStr = firstNonBlank(extractJsonValue(obj, "usage_limit"));
                     if (code != null && !code.isBlank())
