@@ -24,7 +24,7 @@ if not "%~1"=="" (
 set MODULES=javafx.controls,javafx.fxml
 
 echo === Compile %MAIN_CLASS%.java ===
-javac --module-path "%FX_LIB%" --add-modules %MODULES% %MAIN_CLASS%.java
+javac -encoding UTF-8 --module-path "%FX_LIB%" --add-modules %MODULES% %MAIN_CLASS%.java
 if errorlevel 1 (
     echo [ERROR] Compile failed.
     exit /b 1

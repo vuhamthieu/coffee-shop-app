@@ -579,15 +579,19 @@ public class AdminDashboard extends Application {
         Label title = new Label("Quản lý Mã giảm giá");
         title.setStyle("-fx-text-fill:#6B4C3B;-fx-font-size:20px;-fx-font-weight:bold;");
         couponTable = new TableView<>(coupons);
-        couponTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        couponTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         TableColumn<CouponModel, String> cCodeCol = new TableColumn<>("Mã");
         cCodeCol.setCellValueFactory(new PropertyValueFactory<>("code"));
+        cCodeCol.setPrefWidth(100);
         TableColumn<CouponModel, String> cTypeCol = new TableColumn<>("Loại");
         cTypeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
+        cTypeCol.setPrefWidth(100);
         TableColumn<CouponModel, Double> cValueCol = new TableColumn<>("Giá trị");
         cValueCol.setCellValueFactory(new PropertyValueFactory<>("value"));
+        cValueCol.setPrefWidth(100);
         TableColumn<CouponModel, String> cUsageCol = new TableColumn<>("Đã dùng/Limit");
         cUsageCol.setCellValueFactory(new PropertyValueFactory<>("usageDisplay"));
+        cUsageCol.setPrefWidth(120);
         couponTable.getColumns().addAll(cCodeCol, cTypeCol, cValueCol, cUsageCol);
         HBox btnBox = new HBox(10);
         Button addCouponBtn = createPrimaryButton("➕ Tạo mã");
@@ -750,6 +754,48 @@ public class AdminDashboard extends Application {
             showAlert("Chưa chọn", "Chọn sản phẩm để sửa");
             return;
         }
+
+        Dialog<Pair<String, Double>> dialog = new Dialog<>();
+        dialog.setTitle("Sửa sản phẩm");
+        ButtonType saveButtonType = new ButtonType("Lưu", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        TextField nameField = new TextField(selected.getName());
+        TextField priceField = new TextField(String.valueOf(selected.getPrice()));
+        
+        grid.add(new Label("Tên món:"), 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(new Label("Giá:"), 0, 1);
+        grid.add(priceField, 1, 1);
+        
+        dialog.getDialogPane().setContent(grid);
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == saveButtonType) {
+                try {
+                    String name = nameField.getText();
+                    double price = Double.parseDouble(priceField.getText());
+                    return new Pair<>(name, price);
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+            return null;
+        });
+        
+        dialog.showAndWait().ifPresent(result -> {
+            if (result != null) {
+                String json = String.format(
+                    "{\"id\": %d, \"name\": \"%s\", \"price\": %.0f}",
+                    selected.getId(),
+                    result.getKey().replace("\"", "\\\""),
+                    result.getValue()
+                );
+                sendPostRequest(UPDATE_PRODUCT_URL, json, "Cập nhật sản phẩm", this::loadProducts);
+            }
+        });
     }
 
     private void deleteProduct() {
