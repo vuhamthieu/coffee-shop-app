@@ -43,3 +43,10 @@ out/
 .env.local
 
 *.class
+# Bỏ qua toàn bộ folder Dataset/ID_1
+Dataset/ID_1/
+
+# Hoặc nếu chỉ muốn bỏ qua các file cụ thể bên trong:
+Dataset/ID_1/processed/
+Dataset/ID_1/raw/
+Dataset/ID_1/metadata.json
