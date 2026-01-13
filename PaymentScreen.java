@@ -75,8 +75,9 @@ public class PaymentScreen extends Application {
     // HTTP client cho các call backend liên quan đến thanh toán
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
-    // URL sinh PDF hoá đơn từ backend (sửa lại path cho đúng với file PHP của bạn)
-    private static final String INVOICE_PDF_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/print-invoice.php";
+    // URL để ghi nhận thanh toán vào backend
+    private static final String COMPLETE_PAYMENT_URL = "http://localhost/coffee-shop-app/backend/api/employee/complete-payment.php";
+    private static final String INVOICE_PDF_URL = "http://localhost:8080/backend/api/employee/print-invoice.php";
     // URL in tem món (labels) từ backend
     private static final String ITEM_LABELS_PDF_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/print-item-label.php";
     // URL apply coupon vào backend
@@ -106,7 +107,7 @@ public class PaymentScreen extends Application {
     public void start(Stage primaryStage) {
         this.window = primaryStage;
         Scene scene = buildScene();
-        primaryStage.setTitle("Coffee Aura • Thanh toán");
+        primaryStage.setTitle("Coffee Bean • Thanh toán");
         primaryStage.setScene(scene);
         primaryStage.setMaximized(true);
         primaryStage.show();
@@ -116,7 +117,7 @@ public class PaymentScreen extends Application {
     public void showStandalone() {
         Stage stage = new Stage(StageStyle.DECORATED);
         this.window = stage;
-        stage.setTitle("Coffee Aura • Thanh toán");
+        stage.setTitle("Coffee Bean • Thanh toán");
         stage.setScene(buildScene());
         stage.setMaximized(true);
         stage.show();
@@ -466,7 +467,7 @@ public class PaymentScreen extends Application {
 
     private void refreshPreview() {
         StringBuilder builder = new StringBuilder();
-        builder.append("Coffee Aura Receipt\n");
+        builder.append("Coffee Bean Receipt\n");
         builder.append("Bàn: ").append(tableLabel).append("\n");
         builder.append("Thời gian: ")
                 .append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")))
@@ -501,19 +502,69 @@ public class PaymentScreen extends Application {
         double service = subtotal * 0.05;
         double total = Math.max(0, subtotal + tax + service - appliedDiscount);
 
+        // Nếu có order_id hợp lệ, gửi payment info lên backend
+        if (orderId > 0) {
+            recordPaymentToBackend(method, total);
+        } else {
+            // Nếu không có order_id, chỉ show alert và đóng (cho test mode)
+            showPaymentCompletedAlert(method, total);
+            if (window != null) {
+                window.close();
+            }
+        }
+    }
+
+    private void recordPaymentToBackend(String method, double total) {
+        // Chuẩn bị JSON payload
+        String jsonBody = String.format(
+                "{\"order_id\":%d,\"payment_method\":\"%s\"}",
+                orderId, method.replace("\"", "\\\""));
+
+        HttpRequest request = HttpRequest.newBuilder(URI.create(COMPLETE_PAYMENT_URL))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+
+        new Thread(() -> {
+            try {
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                System.out.println("complete-payment => " + response.statusCode() + " " + response.body());
+
+                if (response.statusCode() == 200 && response.body().contains("\"success\":true")) {
+                    // Ghi nhận thành công trên backend
+                    Platform.runLater(() -> {
+                        showPaymentCompletedAlert(method, total);
+                        if (listener != null) {
+                            listener.onCompleted(tableLabel, total, method, LocalDateTime.now());
+                        }
+                        if (window != null) {
+                            window.close();
+                        }
+                    });
+                } else {
+                    // Lỗi từ backend
+                    Platform.runLater(() -> {
+                        showAlert(Alert.AlertType.ERROR, "Lỗi lưu thanh toán",
+                                "Không thể lưu thông tin thanh toán: " + response.body());
+                    });
+                }
+            } catch (Exception ex) {
+                System.err.println("Lỗi gọi complete-payment: " + ex.getMessage());
+                Platform.runLater(() -> {
+                    showAlert(Alert.AlertType.ERROR, "Lỗi server",
+                            "Không thể kết nối đến server: " + ex.getMessage());
+                });
+            }
+        }).start();
+    }
+
+    private void showPaymentCompletedAlert(String method, double total) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Thanh toán thành công");
         alert.setHeaderText("Đã ghi nhận thanh toán bằng " + method);
-        alert.setContentText(totalLabel.getText() + "\n"
-                + "Chi tiết hóa đơn đã sẵn sàng để in.");
+        alert.setContentText(String.format("%s\nTổng tiền: %s",
+                totalLabel.getText(), currency.format(total)));
         alert.showAndWait();
-
-        if (listener != null) {
-            listener.onCompleted(tableLabel, total, method, LocalDateTime.now());
-        }
-        if (window != null) {
-            window.close();
-        }
     }
 
     private void openInvoicePdfFromBackend() {

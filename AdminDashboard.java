@@ -181,7 +181,7 @@ public class AdminDashboard extends Application {
             scene.getStylesheets().add(cssUrl);
         }
 
-        primaryStage.setTitle("Coffee Aura - Admin Dashboard");
+        primaryStage.setTitle("Coffee Bean - Admin Dashboard");
         primaryStage.setScene(scene);
         primaryStage.show();
 
@@ -319,7 +319,7 @@ public class AdminDashboard extends Application {
         monthlyRevenueLabel = (Label) monthlyCard.getChildren().get(1);
         VBox cashCard = createStatCard("Tiền mặt", "0", "#6B4C3B");
         cashLabel = (Label) cashCard.getChildren().get(1);
-        VBox cardCard = createStatCard("💳 Thẻ", "0", "#C08A64");
+        VBox cardCard = createStatCard("💳 Ví điện tử", "0", "#C08A64");
         cardLabel = (Label) cardCard.getChildren().get(1);
         VBox transferCard = createStatCard("🏦 Chuyển khoản", "0", "#6B4C3B");
         transferLabel = (Label) transferCard.getChildren().get(1);
@@ -357,7 +357,7 @@ public class AdminDashboard extends Application {
         Label methodLabel = new Label("Phương thức:");
         methodLabel.setStyle("-fx-text-fill:#6B4C3B;-fx-font-weight:bold;");
         filterMethodCombo = new ComboBox<>();
-        filterMethodCombo.getItems().addAll("Tất cả", "Tiền mặt", "Thẻ", "Chuyển khoản");
+        filterMethodCombo.getItems().addAll("Tất cả", "Tiền mặt", "Ví điện tử", "Chuyển khoản");
         filterMethodCombo.setValue("Tất cả");
         filterMethodCombo.setPrefWidth(150);
         filterMethodCombo.setStyle(
@@ -556,7 +556,7 @@ public class AdminDashboard extends Application {
 
                 HttpRequest request = HttpRequest.newBuilder(URI.create(GET_ORDER_HISTORY_URL)).GET().build();
                 HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-                
+
                 System.out.println("[DEBUG] Mã phản hồi (Code): " + response.statusCode());
                 String body = response.body();
                 System.out.println("[DEBUG] Nội dung phản hồi: " + body);
@@ -572,10 +572,10 @@ public class AdminDashboard extends Application {
                     System.out.println("[DEBUG] Tìm thấy " + items.length + " mục trong JSON.");
 
                     var loaded = FXCollections.<PaymentRecord>observableArrayList();
-                    
+
                     for (String raw : items) {
                         String obj = normalizeJsonObject(raw);
-                        
+
                         String time = extractJsonValue(obj, "created_at");
                         String table = extractJsonValue(obj, "table_name");
                         String method = extractJsonValue(obj, "payment_method");
@@ -583,11 +583,17 @@ public class AdminDashboard extends Application {
                         double amount = parseDoubleSafe(extractJsonValue(obj, "total"));
 
                         // Log chi tiết từng đơn hàng để kiểm tra
-                        // System.out.println("[DEBUG] Đơn: Time=" + time + ", Status=" + status + ", Total=" + amount);
+                        // System.out.println("[DEBUG] Đơn: Time=" + time + ", Status=" + status + ",
+                        // Total=" + amount);
 
                         // Xử lý dữ liệu trống
-                        if (method == null || method.isEmpty() || method.equals("null")) method = "Tiền mặt";
-                        if (table == null || table.isEmpty()) table = "Mang về";
+                        if (method == null || method.isEmpty() || method.equals("null"))
+                            method = "Tiền mặt";
+                        if (table == null || table.isEmpty())
+                            table = "Mang về";
+
+                        // Normalize payment method to Vietnamese
+                        method = normalizePaymentMethod(method);
 
                         // Chỉ lấy đơn đã thanh toán (Không phân biệt hoa thường)
                         if ("paid".equalsIgnoreCase(status)) {
@@ -596,13 +602,13 @@ public class AdminDashboard extends Application {
                             // System.out.println("[DEBUG] -> Bỏ qua do trạng thái là: " + status);
                         }
                     }
-                    
+
                     System.out.println("[DEBUG] Số lượng đơn 'paid' hợp lệ: " + loaded.size());
 
                     Platform.runLater(() -> {
                         allPayments.setAll(loaded);
                         dashboardTable.refresh();
-                        updateStatistics(); 
+                        updateStatistics();
                         System.out.println("[DEBUG] Đã cập nhật giao diện Dashboard thành công.");
                     });
                 } else {
@@ -617,6 +623,41 @@ public class AdminDashboard extends Application {
 
     private void exportData() {
         System.out.println("Exporting data...");
+    }
+
+    /**
+     * Normalize payment method từ các dạng khác nhau sang tiếng Việt
+     * - "transfer", "bank", "chuyển khoản" → "Chuyển khoản"
+     * - "card", "wallet", "e-wallet", "thẻ", "ví điện tử" → "Ví điện tử"
+     * - "cash", "tiền mặt" → "Tiền mặt"
+     */
+    private String normalizePaymentMethod(String method) {
+        if (method == null || method.isBlank()) {
+            return "Tiền mặt";
+        }
+
+        String normalized = method.toLowerCase().trim();
+
+        // Chuyển khoản
+        if (normalized.contains("transfer") || normalized.contains("bank")
+                || normalized.equals("chuyển khoản")) {
+            return "Chuyển khoản";
+        }
+
+        // Ví điện tử (Card, Wallet, E-wallet)
+        if (normalized.contains("card") || normalized.contains("wallet")
+                || normalized.contains("e-wallet") || normalized.equals("thẻ")
+                || normalized.equals("ví điện tử")) {
+            return "Ví điện tử";
+        }
+
+        // Tiền mặt
+        if (normalized.contains("cash") || normalized.equals("tiền mặt")) {
+            return "Tiền mặt";
+        }
+
+        // Mặc định trả về như cũ nếu không khớp
+        return method;
     }
 
     // ==================== MENU TAB ====================
