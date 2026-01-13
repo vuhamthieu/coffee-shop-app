@@ -17,7 +17,9 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Pair;
-
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -31,9 +33,11 @@ import java.util.Optional;
 public class AdminDashboard extends Application {
 
     // Base URL for Admin API
-    private static final String BASE_URL = "http://localhost:8080/coffee-shop-app/backend/api/admin/";
-    private static final String BASE_EMPLOYEE_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/";
+    private static final String BASE_URL = "http://localhost/coffee-shop-app/backend/api/admin/";
+    private static final String BASE_EMPLOYEE_URL = "http://localhost/coffee-shop-app/backend/api/employee/";
+
     // API Endpoints
+    private static final String GET_ORDER_HISTORY_URL = BASE_URL + "get-order-history.php";
     // Categories
     private static final String GET_CATEGORIES_URL = BASE_EMPLOYEE_URL + "get-categories.php";
     private static final String ADD_CATEGORY_URL = BASE_URL + "add_category.php";
@@ -128,6 +132,7 @@ public class AdminDashboard extends Application {
     public void start(Stage primaryStage) {
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(10, 10, 10, 10));
+        // Màu nền chính xám be (#F5F0E1)
         root.setStyle("-fx-background-color:#F5F0E1;-fx-font-family:'Segoe UI',sans-serif;");
 
         // Header
@@ -137,6 +142,7 @@ public class AdminDashboard extends Application {
         // TabPane với các tabs
         TabPane tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        // Đặt màu nền cho khu vực chứa nội dung tab để đồng bộ
         tabPane.setStyle("-fx-background-color:#F5F0E1;");
 
         // Tab 1: Dashboard (Doanh thu)
@@ -167,6 +173,14 @@ public class AdminDashboard extends Application {
         root.setCenter(tabPane);
 
         Scene scene = new Scene(root, 1400, 850);
+
+        // --- ÁP DỤNG THEME NÂU CHO TABS ---
+        // Gọi hàm tạo CSS và thêm vào scene
+        String cssUrl = createCoffeeThemeCss();
+        if (cssUrl != null) {
+            scene.getStylesheets().add(cssUrl);
+        }
+
         primaryStage.setTitle("Coffee Aura - Admin Dashboard");
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -178,6 +192,78 @@ public class AdminDashboard extends Application {
         loadInventory();
         loadCoupons();
         loadEmployees();
+    }
+
+    /**
+     * Hàm này tạo ra một file CSS tạm thời chứa định nghĩa giao diện
+     * cho các tab theo tông màu nâu/vàng của ứng dụng.
+     * 
+     * @return URL dạng chuỗi đến file CSS tạm thời.
+     */
+    private String createCoffeeThemeCss() {
+        try {
+            // Màu nền chính: #F5F0E1
+            // Màu nâu đậm (text/border): #6B4C3B
+            // Màu vàng nút bấm (hover): #F2C57C
+            // Màu be đậm hơn cho tab chưa chọn: #E6DCCA
+
+            String cssContent = "/* Nền tổng thể của TabPane */\n" +
+                    ".tab-pane {\n" +
+                    "    -fx-background-color: #F5F0E1;\n" +
+                    "}\n" +
+                    "/* Khu vực chứa các đầu tab (header) */\n" +
+                    ".tab-pane > .tab-header-area {\n" +
+                    "    -fx-padding: 5 5 0 5;\n" +
+                    "}\n" +
+                    "/* Nền phía sau các tab header - vẽ một đường kẻ nâu bên dưới */\n" +
+                    ".tab-pane > .tab-header-area > .tab-header-background {\n" +
+                    "    -fx-background-color: transparent;\n" +
+                    "    -fx-border-color: #6B4C3B;\n" +
+                    "    -fx-border-width: 0 0 2 0;\n" +
+                    "}\n" +
+                    "/* Định dạng cho các Tab khi CHƯA chọn */\n" +
+                    ".tab {\n" +
+                    "    -fx-background-color: #E6DCCA;\n" + // Màu be hơi tối hơn nền
+                    "    -fx-background-radius: 10 10 0 0;\n" + // Bo tròn góc trên
+                    "    -fx-border-color: #A08060;\n" + // Viền nâu nhạt
+                    "    -fx-border-width: 1 1 0 1;\n" +
+                    "    -fx-border-radius: 10 10 0 0;\n" +
+                    "    -fx-padding: 6 12 6 12;\n" +
+                    "    -fx-cursor: hand;\n" +
+                    "}\n" +
+                    "/* Chữ bên trong Tab */\n" +
+                    ".tab .tab-label {\n" +
+                    "    -fx-text-fill: #6B4C3B;\n" + // Chữ màu nâu đậm
+                    "    -fx-font-weight: bold;\n" +
+                    "    -fx-font-size: 13px;\n" +
+                    "}\n" +
+                    "/* Hiệu ứng khi di chuột vào Tab chưa chọn */\n" +
+                    ".tab:hover {\n" +
+                    "    -fx-background-color: #F2C57C;\n" + // Màu vàng giống nút bấm
+                    "}\n" +
+                    "/* Định dạng cho Tab khi ĐANG ĐƯỢC CHỌN */\n" +
+                    ".tab:selected {\n" +
+                    "    -fx-background-color: #F5F0E1;\n" + // Nền tiệp với màu nền nội dung
+                    "    -fx-border-color: #6B4C3B;\n" + // Viền nâu đậm nổi bật
+                    "    -fx-border-width: 3 2 0 2;\n" + // Viền trên dày hơn để làm điểm nhấn
+                    "    -fx-background-insets: 0 0 -2 0;\n" + // Đẩy nền xuống che đường kẻ ngang
+                    "}\n" +
+                    "/* Chữ bên trong Tab đang chọn */\n" +
+                    ".tab:selected .tab-label {\n" +
+                    "    -fx-font-size: 14px;\n" +
+                    "    -fx-translate-y: -1;\n" + // Nhích chữ lên xíu do viền dày
+                    "}";
+
+            File tempCssFile = File.createTempFile("coffee_theme", ".css");
+            tempCssFile.deleteOnExit(); // Tự động xóa file khi tắt app
+            try (FileWriter writer = new FileWriter(tempCssFile)) {
+                writer.write(cssContent);
+            }
+            return tempCssFile.toURI().toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private VBox buildHeader() {
@@ -373,27 +459,31 @@ public class AdminDashboard extends Application {
                     || payment.getMethod().equals(methodFilter);
             boolean matchesDate = true;
             if (dateFilter != null && !dateFilter.equals("Tất cả")) {
-                LocalDate paymentDate = LocalDate.parse(payment.getTime().substring(0, 10),
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                LocalDate today = LocalDate.now();
-                switch (dateFilter) {
-                    case "Hôm nay":
-                        matchesDate = paymentDate.equals(today);
-                        break;
-                    case "Tuần này":
-                        LocalDate weekStart = today.minusDays(today.getDayOfWeek().getValue() - 1);
-                        matchesDate = !paymentDate.isBefore(weekStart);
-                        break;
-                    case "Tháng này":
-                        matchesDate = paymentDate.getMonth() == today.getMonth()
-                                && paymentDate.getYear() == today.getYear();
-                        break;
-                    case "7 ngày qua":
-                        matchesDate = !paymentDate.isBefore(today.minusDays(7));
-                        break;
-                    case "30 ngày qua":
-                        matchesDate = !paymentDate.isBefore(today.minusDays(30));
-                        break;
+                try {
+                    LocalDate paymentDate = LocalDate.parse(payment.getTime().substring(0, 10),
+                            DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                    LocalDate today = LocalDate.now();
+                    switch (dateFilter) {
+                        case "Hôm nay":
+                            matchesDate = paymentDate.equals(today);
+                            break;
+                        case "Tuần này":
+                            LocalDate weekStart = today.minusDays(today.getDayOfWeek().getValue() - 1);
+                            matchesDate = !paymentDate.isBefore(weekStart) && !paymentDate.isAfter(today);
+                            break;
+                        case "Tháng này":
+                            matchesDate = paymentDate.getMonth() == today.getMonth()
+                                    && paymentDate.getYear() == today.getYear();
+                            break;
+                        case "7 ngày qua":
+                            matchesDate = !paymentDate.isBefore(today.minusDays(7)) && !paymentDate.isAfter(today);
+                            break;
+                        case "30 ngày qua":
+                            matchesDate = !paymentDate.isBefore(today.minusDays(30)) && !paymentDate.isAfter(today);
+                            break;
+                    }
+                } catch (Exception e) {
+                    matchesDate = false;
                 }
             }
             return matchesSearch && matchesMethod && matchesDate;
@@ -401,11 +491,128 @@ public class AdminDashboard extends Application {
     }
 
     private void updateStatistics() {
+        if (allPayments.isEmpty()) {
+            totalRevenueLabel.setText(currency.format(0));
+            todayRevenueLabel.setText(currency.format(0));
+            weeklyRevenueLabel.setText(currency.format(0));
+            monthlyRevenueLabel.setText(currency.format(0));
+            cashLabel.setText(currency.format(0));
+            cardLabel.setText(currency.format(0));
+            transferLabel.setText(currency.format(0));
+            return;
+        }
+        LocalDate today = LocalDate.now();
+        int currentMonth = today.getMonthValue();
+        int currentYear = today.getYear();
+        double total = filteredPayments.stream().mapToDouble(PaymentRecord::getAmount).sum();
+        double todayTotal = allPayments.stream()
+                .filter(p -> p.getTime().startsWith(today.toString()))
+                .mapToDouble(PaymentRecord::getAmount).sum();
+        double monthlyTotal = allPayments.stream()
+                .filter(p -> {
+                    try {
+                        LocalDate pDate = LocalDate.parse(p.getTime().substring(0, 10));
+                        return pDate.getMonthValue() == currentMonth && pDate.getYear() == currentYear;
+                    } catch (Exception e) {
+                        return false;
+                    }
+                })
+                .mapToDouble(PaymentRecord::getAmount).sum();
+        LocalDate oneWeekAgo = today.minusDays(7);
+        double weeklyTotal = allPayments.stream()
+                .filter(p -> {
+                    try {
+                        LocalDate pDate = LocalDate.parse(p.getTime().substring(0, 10));
+                        return !pDate.isBefore(oneWeekAgo) && !pDate.isAfter(today);
+                    } catch (Exception e) {
+                        return false;
+                    }
+                })
+                .mapToDouble(PaymentRecord::getAmount).sum();
+        double cash = filteredPayments.stream()
+                .filter(p -> p.getMethod().equalsIgnoreCase("Cash") || p.getMethod().equalsIgnoreCase("Tiền mặt"))
+                .mapToDouble(PaymentRecord::getAmount).sum();
+        double card = filteredPayments.stream()
+                .filter(p -> p.getMethod().equalsIgnoreCase("Card") || p.getMethod().equalsIgnoreCase("Thẻ"))
+                .mapToDouble(PaymentRecord::getAmount).sum();
+        double transfer = filteredPayments.stream()
+                .filter(p -> p.getMethod().equalsIgnoreCase("Transfer")
+                        || p.getMethod().equalsIgnoreCase("Chuyển khoản"))
+                .mapToDouble(PaymentRecord::getAmount).sum();
+        totalRevenueLabel.setText(currency.format(total));
+        todayRevenueLabel.setText(currency.format(todayTotal));
+        weeklyRevenueLabel.setText(currency.format(weeklyTotal));
+        monthlyRevenueLabel.setText(currency.format(monthlyTotal));
+        cashLabel.setText(currency.format(cash));
+        cardLabel.setText(currency.format(card));
+        transferLabel.setText(currency.format(transfer));
     }
 
     private void loadDashboardData() {
-        allPayments.clear();
-        updateStatistics();
+        new Thread(() -> {
+            try {
+                System.out.println("================= BẮT ĐẦU TẢI DASHBOARD =================");
+                System.out.println("[DEBUG] Đang gọi API: " + GET_ORDER_HISTORY_URL);
+
+                HttpRequest request = HttpRequest.newBuilder(URI.create(GET_ORDER_HISTORY_URL)).GET().build();
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                
+                System.out.println("[DEBUG] Mã phản hồi (Code): " + response.statusCode());
+                String body = response.body();
+                System.out.println("[DEBUG] Nội dung phản hồi: " + body);
+
+                if (response.statusCode() == 200) {
+                    // Kiểm tra xem backend có báo lỗi trong JSON không
+                    if (body.contains("\"success\":false")) {
+                        System.err.println("[ERROR] Backend trả về lỗi: " + body);
+                        return;
+                    }
+
+                    String[] items = extractDataArrayObjects(body);
+                    System.out.println("[DEBUG] Tìm thấy " + items.length + " mục trong JSON.");
+
+                    var loaded = FXCollections.<PaymentRecord>observableArrayList();
+                    
+                    for (String raw : items) {
+                        String obj = normalizeJsonObject(raw);
+                        
+                        String time = extractJsonValue(obj, "created_at");
+                        String table = extractJsonValue(obj, "table_name");
+                        String method = extractJsonValue(obj, "payment_method");
+                        String status = extractJsonValue(obj, "order_status");
+                        double amount = parseDoubleSafe(extractJsonValue(obj, "total"));
+
+                        // Log chi tiết từng đơn hàng để kiểm tra
+                        // System.out.println("[DEBUG] Đơn: Time=" + time + ", Status=" + status + ", Total=" + amount);
+
+                        // Xử lý dữ liệu trống
+                        if (method == null || method.isEmpty() || method.equals("null")) method = "Tiền mặt";
+                        if (table == null || table.isEmpty()) table = "Mang về";
+
+                        // Chỉ lấy đơn đã thanh toán (Không phân biệt hoa thường)
+                        if ("paid".equalsIgnoreCase(status)) {
+                            loaded.add(new PaymentRecord(time, table, method, amount));
+                        } else {
+                            // System.out.println("[DEBUG] -> Bỏ qua do trạng thái là: " + status);
+                        }
+                    }
+                    
+                    System.out.println("[DEBUG] Số lượng đơn 'paid' hợp lệ: " + loaded.size());
+
+                    Platform.runLater(() -> {
+                        allPayments.setAll(loaded);
+                        dashboardTable.refresh();
+                        updateStatistics(); 
+                        System.out.println("[DEBUG] Đã cập nhật giao diện Dashboard thành công.");
+                    });
+                } else {
+                    System.err.println("[ERROR] Lỗi kết nối HTTP: " + response.statusCode());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                Platform.runLater(() -> showAlert("Lỗi", "Không tải được dữ liệu: " + e.getMessage()));
+            }
+        }).start();
     }
 
     private void exportData() {
@@ -533,97 +740,26 @@ public class AdminDashboard extends Application {
         btnBox.setAlignment(Pos.CENTER_LEFT);
 
         Button addEmpBtn = createPrimaryButton("➕ Thêm");
-        Button editEmpBtn = createGhostButton("✏️ Sửa"); // Mới
+        Button editEmpBtn = createGhostButton("✏️ Sửa");
         Button delEmpBtn = createGhostButton("🗑️ Xóa");
         Button lockBtn = createGhostButton("🔒 Khóa/Mở");
-        Button roleBtn = createGhostButton("⚖️ Phân quyền"); // Mới
-        Button faceBtn = createGhostButton("👤 FaceID"); // Mới
-        Button timeBtn = createGhostButton("⏱️ Chấm công"); // Mới
+        Button roleBtn = createGhostButton("⚖️ Phân quyền");
+        Button faceBtn = createGhostButton("👤 FaceID");
+        Button timeBtn = createGhostButton("⏱️ Chấm công");
 
         addEmpBtn.setOnAction(e -> showAddEmployeeDialog());
         editEmpBtn.setOnAction(e -> showEditEmployeeDialog());
         delEmpBtn.setOnAction(e -> deleteEmployee());
         lockBtn.setOnAction(e -> toggleEmployeeLock());
-        roleBtn.setOnAction(e -> showUpdateRoleDialog()); // Hàm này đã có trong code của bạn
-        faceBtn.setOnAction(e -> showFaceIDOptions()); // Hàm quản lý FaceID mới
-        timeBtn.setOnAction(e -> showWorkingHoursDialog()); // Hàm này đã có trong code của bạn
+        roleBtn.setOnAction(e -> showChangeRoleDialog());
+        faceBtn.setOnAction(e -> showFaceIDOptions());
+        timeBtn.setOnAction(e -> showWorkingHoursDialog());
 
         btnBox.getChildren().addAll(addEmpBtn, editEmpBtn, delEmpBtn, lockBtn, roleBtn, faceBtn, timeBtn);
 
         employeeTab.getChildren().addAll(title, employeeTable, btnBox);
         VBox.setVgrow(employeeTable, Priority.ALWAYS);
         return employeeTab;
-    }
-
-    private void showEditEmployeeDialog() {
-        EmployeeModel selected = employeeTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Chưa chọn", "Vui lòng chọn nhân viên để sửa thông tin");
-            return;
-        }
-
-        Dialog<String> dialog = new Dialog<>();
-        dialog.setTitle("Sửa thông tin nhân viên");
-        dialog.setHeaderText("Cập nhật cho: " + selected.getName());
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20));
-
-        TextField nameField = new TextField(selected.getName());
-        PasswordField passField = new PasswordField();
-        passField.setPromptText("Để trống nếu không đổi");
-
-        grid.add(new Label("Tên hiển thị:"), 0, 0);
-        grid.add(nameField, 1, 0);
-        grid.add(new Label("Mật khẩu mới:"), 0, 1);
-        grid.add(passField, 1, 1);
-
-        dialog.getDialogPane().setContent(grid);
-
-        dialog.setResultConverter(btn -> {
-            if (btn == ButtonType.OK) {
-                // Chỉ gửi password nếu người dùng có nhập
-                String passJson = passField.getText().isEmpty() ? ""
-                        : String.format(", \"employee_password\":\"%s\"", passField.getText());
-
-                return String.format("{\"id\":%d, \"employee_name\":\"%s\"%s}",
-                        selected.getId(), nameField.getText(), passJson);
-            }
-            return null;
-        });
-
-        dialog.showAndWait().ifPresent(
-                json -> sendPostRequest(UPDATE_EMPLOYEE_URL, json, "Cập nhật nhân viên", this::loadEmployees));
-    }
-
-    private void showFaceIDOptions() {
-        EmployeeModel selected = employeeTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Chưa chọn", "Vui lòng chọn nhân viên.");
-            return;
-        }
-
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Quản lý FaceID");
-        alert.setHeaderText("FaceID: " + selected.getName());
-        alert.setContentText("Bạn muốn thực hiện hành động gì?");
-
-        ButtonType btnAdd = new ButtonType("Thêm mới");
-        ButtonType btnDel = new ButtonType("Xóa cũ");
-        ButtonType btnCancel = new ButtonType("Hủy", ButtonBar.ButtonData.CANCEL_CLOSE);
-
-        alert.getButtonTypes().setAll(btnAdd, btnDel, btnCancel);
-
-        alert.showAndWait().ifPresent(type -> {
-            if (type == btnAdd) {
-                showAddFaceDialog();
-            } else if (type == btnDel) {
-                showDeleteFaceDialog(); // Bạn đã có hàm này trong code rồi (dòng 578)
-            }
-        });
     }
 
     // ==================== INVENTORY TAB ====================
@@ -988,6 +1124,84 @@ public class AdminDashboard extends Application {
                 .ifPresent(json -> sendPostRequest(ADD_EMPLOYEE_URL, json, "Thêm nhân viên", this::loadEmployees));
     }
 
+    private void loadEmployees() {
+        new Thread(() -> {
+            try {
+                HttpRequest request = HttpRequest.newBuilder(URI.create(GET_EMPLOYEES_URL)).GET().build();
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+                if (response.statusCode() == 200) {
+                    String[] items = extractDataArrayObjects(response.body());
+                    var loaded = FXCollections.<EmployeeModel>observableArrayList();
+                    for (String raw : items) {
+                        String obj = normalizeJsonObject(raw);
+                        String idStr = extractJsonValue(obj, "id");
+                        String name = extractJsonValue(obj, "employee_name");
+                        String username = extractJsonValue(obj, "username");
+                        String roleId = extractJsonValue(obj, "role_id");
+                        String active = extractJsonValue(obj, "active");
+
+                        if (username != null && !username.isBlank()) {
+                            loaded.add(new EmployeeModel(parseIntSafe(idStr), name, username, parseIntSafe(roleId),
+                                    parseBooleanInt(active, true)));
+                        }
+                    }
+                    Platform.runLater(() -> {
+                        employees.setAll(loaded);
+                        if (employeeTable != null)
+                            employeeTable.refresh();
+                    });
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private void showEditEmployeeDialog() {
+        EmployeeModel selected = employeeTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Chưa chọn", "Vui lòng chọn nhân viên để sửa thông tin");
+            return;
+        }
+
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Sửa thông tin nhân viên");
+        dialog.setHeaderText("Cập nhật cho: " + selected.getName());
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20));
+
+        TextField nameField = new TextField(selected.getName());
+        PasswordField passField = new PasswordField();
+        passField.setPromptText("Để trống nếu không đổi");
+
+        grid.add(new Label("Tên hiển thị:"), 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(new Label("Mật khẩu mới:"), 0, 1);
+        grid.add(passField, 1, 1);
+
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(btn -> {
+            if (btn == ButtonType.OK) {
+                // Chỉ gửi password nếu người dùng có nhập
+                String passJson = passField.getText().isEmpty() ? ""
+                        : String.format(", \"employee_password\":\"%s\"", passField.getText());
+
+                return String.format("{\"id\":%d, \"employee_name\":\"%s\"%s}",
+                        selected.getId(), nameField.getText(), passJson);
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(
+                json -> sendPostRequest(UPDATE_EMPLOYEE_URL, json, "Cập nhật nhân viên", this::loadEmployees));
+    }
+
     private void deleteEmployee() {
         EmployeeModel selected = employeeTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
@@ -1013,11 +1227,12 @@ public class AdminDashboard extends Application {
             return;
         }
         String url = selected.getActive() ? LOCK_ACCOUNT_URL : UNLOCK_ACCOUNT_URL;
+        // Sửa "id" thành "employee_id" để khớp với API PHP
         String json = String.format("{\"employee_id\": %d}", selected.getId());
         sendPostRequest(url, json, "Khóa/Mở khóa", this::loadEmployees);
     }
 
-    private void showUpdateRoleDialog() {
+    private void showChangeRoleDialog() {
         EmployeeModel selected = employeeTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
             showAlert("Chưa chọn", "Vui lòng chọn nhân viên để đổi vai trò");
@@ -1087,6 +1302,33 @@ public class AdminDashboard extends Application {
                 Platform.runLater(() -> showAlert("Lỗi", "Không thể tải dữ liệu giờ làm: " + e.getMessage()));
             }
         }).start();
+    }
+
+    private void showFaceIDOptions() {
+        EmployeeModel selected = employeeTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Chưa chọn", "Vui lòng chọn nhân viên.");
+            return;
+        }
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Quản lý FaceID");
+        alert.setHeaderText("FaceID: " + selected.getName());
+        alert.setContentText("Bạn muốn thực hiện hành động gì?");
+
+        ButtonType btnAdd = new ButtonType("Thêm mới");
+        ButtonType btnDel = new ButtonType("Xóa cũ");
+        ButtonType btnCancel = new ButtonType("Hủy", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        alert.getButtonTypes().setAll(btnAdd, btnDel, btnCancel);
+
+        alert.showAndWait().ifPresent(type -> {
+            if (type == btnAdd) {
+                showAddFaceDialog();
+            } else if (type == btnDel) {
+                showDeleteFaceDialog();
+            }
+        });
     }
 
     private void showAddFaceDialog() {
@@ -1192,38 +1434,6 @@ public class AdminDashboard extends Application {
         });
     }
 
-    private void loadEmployees() {
-        new Thread(() -> {
-            try {
-                HttpRequest request = HttpRequest.newBuilder(URI.create(GET_EMPLOYEES_URL)).GET().build();
-                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-                String[] items = extractDataArrayObjects(response.body());
-
-                var loaded = FXCollections.<EmployeeModel>observableArrayList();
-                for (String raw : items) {
-                    String obj = normalizeJsonObject(raw);
-                    int id = parseIntSafe(extractJsonValue(obj, "id"));
-                    // Lưu ý: PHP trả về 'employee_name', Model Java cần 'name'
-                    String name = extractJsonValue(obj, "employee_name");
-                    String username = extractJsonValue(obj, "username");
-                    int roleId = parseIntSafe(extractJsonValue(obj, "role_id"));
-                    boolean active = parseBooleanInt(extractJsonValue(obj, "active"), true);
-
-                    if (username != null && !username.isBlank()) {
-                        loaded.add(new EmployeeModel(id, name, username, roleId, active));
-                    }
-                }
-                Platform.runLater(() -> {
-                    employees.setAll(loaded);
-                    if (employeeTable != null)
-                        employeeTable.refresh();
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).start();
-    }
-
     // --- Inventory ---
     private void showImportDialog() {
         InventoryModel selected = inventoryTable.getSelectionModel().getSelectedItem();
@@ -1300,9 +1510,6 @@ public class AdminDashboard extends Application {
     }
 
     private void showCouponUsageDialog() {
-    }
-
-    private void showChangeRoleDialog() {
     }
 
     // ==================== GENERIC API METHODS ====================
@@ -1786,11 +1993,11 @@ public class AdminDashboard extends Application {
         private final double amount;
         private final String method;
 
-        public PaymentRecord(String time, String table, double amount, String method) {
+        public PaymentRecord(String time, String table, String method, double amount) {
             this.time = time;
             this.table = table;
-            this.amount = amount;
             this.method = method;
+            this.amount = amount;
         }
 
         public String getTime() {
@@ -1849,8 +2056,11 @@ public class AdminDashboard extends Application {
 
                 Platform.runLater(() -> {
                     try {
-                        new LoginPage().start(new Stage());
+                        // Giả sử bạn có class LoginPage để quay lại
+                        // new LoginPage().start(new Stage());
                         currentStage.close();
+                        // Nếu chưa có LoginPage, tạm thời chỉ đóng cửa sổ:
+                        System.out.println("Đã đăng xuất. (Cần implement chuyển hướng về trang Login)");
                     } catch (Exception e) {
                         e.printStackTrace();
                         showAlert("Lỗi", "Không thể mở màn hình đăng nhập: " + e.getMessage());
@@ -1859,4 +2069,4 @@ public class AdminDashboard extends Application {
             }
         });
     }
-}
+}git 
