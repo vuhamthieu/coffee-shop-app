@@ -33,8 +33,8 @@ import java.util.Optional;
 public class AdminDashboard extends Application {
 
     // Base URL for Admin API
-    private static final String BASE_URL = "http://localhost:8080/coffee-shop-app/backend/api/admin/";
-    private static final String BASE_EMPLOYEE_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/";
+    private static final String BASE_URL = "http://localhost/coffee-shop-app/backend/api/admin/";
+    private static final String BASE_EMPLOYEE_URL = "http://localhost/coffee-shop-app/backend/api/employee/";
 
     // API Endpoints
     private static final String GET_ORDER_HISTORY_URL = BASE_URL + "get-order-history.php";
@@ -2436,10 +2436,8 @@ public class AdminDashboard extends Application {
 
                 Platform.runLater(() -> {
                     try {
-                        // Giả sử bạn có class LoginPage để quay lại
-                        // new LoginPage().start(new Stage());
+                        new LoginPage().start(new Stage());
                         currentStage.close();
-                        // Nếu chưa có LoginPage, tạm thời chỉ đóng cửa sổ:
                         System.out.println("Đã đăng xuất. (Cần implement chuyển hướng về trang Login)");
                     } catch (Exception e) {
                         e.printStackTrace();
