@@ -211,16 +211,16 @@
             require 'api/admin/inventory/get-list.php';
             break;
 
-        case 'api/admin/inventory/import':
-            require 'api/admin/inventory/import.php';
+        case 'api/admin/inventory/add-inventory':
+            require 'api/admin/inventory/add_inventory.php';
             break;
 
-        case 'api/admin/inventory/export':
-            require 'api/admin/inventory/export.php';
+        case 'api/admin/inventory/update-inventory':
+            require 'api/admin/inventory/update_inventory.php';
             break;
 
-        case 'api/admin/inventory/export-by-product':
-            require 'api/admin/inventory/export-by-product.php';
+        case 'api/admin/inventory/delete-inventory':
+            require 'api/admin/inventory/delete_inventory.php';
             break;
 
         case 'api/admin/inventory/get-low-stock-alert':
