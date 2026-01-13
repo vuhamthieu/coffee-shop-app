@@ -33,8 +33,8 @@ import java.util.Optional;
 public class AdminDashboard extends Application {
 
     // Base URL for Admin API
-    private static final String BASE_URL = "http://localhost:8080/coffee-shop-app/backend/api/admin/";
-    private static final String BASE_EMPLOYEE_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/";
+    private static final String BASE_URL = "http://localhost/coffee-shop-app/backend/api/admin/";
+    private static final String BASE_EMPLOYEE_URL = "http://localhost/coffee-shop-app/backend/api/employee/";
 
     // API Endpoints
     private static final String GET_ORDER_HISTORY_URL = BASE_URL + "get-order-history.php";
@@ -533,7 +533,7 @@ public class AdminDashboard extends Application {
                 .filter(p -> p.getMethod().equalsIgnoreCase("Cash") || p.getMethod().equalsIgnoreCase("Tiền mặt"))
                 .mapToDouble(PaymentRecord::getAmount).sum();
         double card = filteredPayments.stream()
-                .filter(p -> p.getMethod().equalsIgnoreCase("Card") || p.getMethod().equalsIgnoreCase("Thẻ"))
+                .filter(p -> p.getMethod().equalsIgnoreCase("Card") || p.getMethod().equalsIgnoreCase("Ví điện tử"))
                 .mapToDouble(PaymentRecord::getAmount).sum();
         double transfer = filteredPayments.stream()
                 .filter(p -> p.getMethod().equalsIgnoreCase("Transfer")
