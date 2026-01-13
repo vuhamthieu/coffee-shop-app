@@ -128,6 +128,9 @@ public class AdminDashboard extends Application {
     private ObservableList<CouponModel> coupons = FXCollections.observableArrayList();
     private TableView<CouponModel> couponTable;
 
+    // Report Tab Data
+    private TableView<ReportItem> reportTable;
+
     @Override
     public void start(Stage primaryStage) {
         BorderPane root = new BorderPane();
@@ -380,9 +383,7 @@ public class AdminDashboard extends Application {
             loadDashboardData();
             updateStatistics();
         });
-        Button exportBtn = createGhostButton("📊 Xuất dữ liệu");
-        exportBtn.setOnAction(e -> exportData());
-        HBox buttonBox = new HBox(10, refreshBtn, exportBtn);
+        HBox buttonBox = new HBox(10, refreshBtn);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
         HBox.setHgrow(buttonBox, Priority.ALWAYS);
         controls.getChildren().addAll(searchLabel, searchField, methodLabel, filterMethodCombo, dateLabel,
@@ -905,20 +906,238 @@ public class AdminDashboard extends Application {
                 new Label("Tháng:"), monthCombo, new Label("Năm:"), yearCombo, loadBtn);
         selectorBox.setAlignment(Pos.CENTER_LEFT);
 
-        reportDisplayArea = new TextArea();
-        reportDisplayArea.setEditable(false);
-        reportDisplayArea.setWrapText(true);
-        reportDisplayArea.setText("Chọn loại báo cáo và nhấn 'Tải báo cáo'");
-        reportDisplayArea.setStyle("-fx-font-family: 'Consolas', monospace;");
+        // Thay TextArea thành TableView
+        ObservableList<ReportItem> reportData = FXCollections.observableArrayList();
+        TableView<ReportItem> reportTable = new TableView<>(reportData);
+        reportTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        reportTable.setPlaceholder(new Label("Chọn loại báo cáo và nhấn 'Tải báo cáo'"));
+        reportTable.setStyle("-fx-background-color:#FFFFFF;-fx-background-radius:12;");
 
-        reportTab.getChildren().addAll(title, selectorBox, reportDisplayArea);
-        VBox.setVgrow(reportDisplayArea, Priority.ALWAYS);
+        TableColumn<ReportItem, String> labelCol = new TableColumn<>("Chỉ tiêu");
+        labelCol.setCellValueFactory(new PropertyValueFactory<>("label"));
+        labelCol.setPrefWidth(300);
+
+        TableColumn<ReportItem, String> valueCol = new TableColumn<>("Giá trị");
+        valueCol.setCellValueFactory(new PropertyValueFactory<>("value"));
+        valueCol.setStyle("-fx-alignment:CENTER_RIGHT;");
+
+        reportTable.getColumns().addAll(labelCol, valueCol);
+
+        reportTab.getChildren().addAll(title, selectorBox, reportTable);
+        VBox.setVgrow(reportTable, Priority.ALWAYS);
+
+        // Lưu reference để dùng trong loadReport()
+        this.reportTable = reportTable;
+
         return reportTab;
     }
 
-    // ==================== DIALOG METHODS IMPLEMENTATION ====================
+    // ==================== DIALOG METHODS (stub implementations)
+    // ====================
 
-    // --- Category CRUD ---
+    private ObservableList<ReportItem> parseReportData(String body) {
+        ObservableList<ReportItem> items = FXCollections.observableArrayList();
+
+        try {
+            if (body == null || body.isEmpty()) {
+                items.add(new ReportItem("Kết quả", "Không có dữ liệu"));
+                return items;
+            }
+
+            // Kiểm tra success
+            if (body.contains("\"success\":false")) {
+                String error = extractJsonValue(body, "message");
+                items.add(new ReportItem("Lỗi", error.isEmpty() ? "Không tải được báo cáo" : error));
+                return items;
+            }
+
+            // Thử extract data array trước
+            String[] dataItems = extractDataArrayObjects(body);
+
+            // Nếu không có data array, parse trực tiếp từ body
+            if (dataItems.length == 0) {
+                // Parse các field chung như total_revenue, order_count, customer_count, v.v...
+                String totalRevenue = extractJsonValue(body, "total_revenue");
+                String orderCount = extractJsonValue(body, "order_count");
+                String customerCount = extractJsonValue(body, "customer_count");
+                String date = extractJsonValue(body, "date");
+                String salaryExpenses = extractJsonValue(body, "salary_expenses");
+                String profit = extractJsonValue(body, "profit");
+                String profitMargin = extractJsonValue(body, "profit_margin");
+                String employeeCount = extractJsonValue(body, "employee_count");
+                String totalCustomers = extractJsonValue(body, "total_customers");
+                String totalOrders = extractJsonValue(body, "total_orders");
+
+                // Thêm date nếu có
+                if (!date.isEmpty()) {
+                    items.add(new ReportItem("Ngày", date));
+                }
+
+                // Thêm các metric chính
+                if (!totalRevenue.isEmpty()) {
+                    try {
+                        double val = Double.parseDouble(totalRevenue);
+                        items.add(new ReportItem("Tổng doanh thu", currency.format(val)));
+                    } catch (Exception e) {
+                        items.add(new ReportItem("Tổng doanh thu", totalRevenue));
+                    }
+                }
+
+                if (!orderCount.isEmpty()) {
+                    items.add(new ReportItem("Số đơn", orderCount + " đơn"));
+                }
+
+                if (!customerCount.isEmpty()) {
+                    items.add(new ReportItem("Số bàn", customerCount));
+                }
+
+                if (!totalCustomers.isEmpty()) {
+                    items.add(new ReportItem("Tổng khách", totalCustomers));
+                }
+
+                if (!totalOrders.isEmpty()) {
+                    items.add(new ReportItem("Tổng đơn hàng", totalOrders));
+                }
+
+                if (!salaryExpenses.isEmpty()) {
+                    try {
+                        double val = Double.parseDouble(salaryExpenses);
+                        items.add(new ReportItem("Chi phí lương", currency.format(val)));
+                    } catch (Exception e) {
+                        items.add(new ReportItem("Chi phí lương", salaryExpenses));
+                    }
+                }
+
+                if (!employeeCount.isEmpty()) {
+                    items.add(new ReportItem("Số nhân viên", employeeCount));
+                }
+
+                if (!profit.isEmpty()) {
+                    try {
+                        double val = Double.parseDouble(profit);
+                        items.add(new ReportItem("Lợi nhuận", currency.format(val)));
+                    } catch (Exception e) {
+                        items.add(new ReportItem("Lợi nhuận", profit));
+                    }
+                }
+
+                if (!profitMargin.isEmpty()) {
+                    items.add(new ReportItem("Tỷ lệ lợi nhuận", profitMargin + "%"));
+                }
+
+                if (items.isEmpty()) {
+                    items.add(new ReportItem("Kết quả", "Không có dữ liệu"));
+                }
+
+                return items;
+            }
+
+            // Parse các item trong data array
+            for (String raw : dataItems) {
+                String obj = normalizeJsonObject(raw);
+
+                // Thử lấy các field phổ biến
+                String date = extractJsonValue(obj, "date");
+                String day = extractJsonValue(obj, "day");
+                String shift = extractJsonValue(obj, "shift");
+                String shiftName = extractJsonValue(obj, "shift_name");
+                String product = extractJsonValue(obj, "product_name");
+                String revenue = extractJsonValue(obj, "revenue");
+                String total = extractJsonValue(obj, "total");
+                String totalRevenue = extractJsonValue(obj, "total_revenue");
+                String count = extractJsonValue(obj, "count");
+                String orderCount = extractJsonValue(obj, "order_count");
+                String soldQty = extractJsonValue(obj, "sold_quantity");
+                String totalQty = extractJsonValue(obj, "total_qty");
+                String dailyCustomers = extractJsonValue(obj, "daily_customers");
+                String expense = extractJsonValue(obj, "expense");
+
+                // Xây dựng label và value
+                if (!date.isEmpty()) {
+                    items.add(new ReportItem("Ngày", date));
+                }
+                if (!day.isEmpty()) {
+                    items.add(new ReportItem("Ngày", day));
+                }
+                if (!shift.isEmpty() && shift.matches("\\d+")) {
+                    String shiftLabel = getShiftLabel(Integer.parseInt(shift));
+                    items.add(new ReportItem("Ca", shiftLabel));
+                }
+                if (!shiftName.isEmpty()) {
+                    items.add(new ReportItem("Ca", shiftName));
+                }
+                if (!product.isEmpty()) {
+                    items.add(new ReportItem("Sản phẩm", product));
+                }
+                if (!revenue.isEmpty()) {
+                    try {
+                        double val = Double.parseDouble(revenue);
+                        items.add(new ReportItem("Doanh thu", currency.format(val)));
+                    } catch (Exception e) {
+                        items.add(new ReportItem("Doanh thu", revenue));
+                    }
+                }
+                if (!total.isEmpty()) {
+                    try {
+                        double val = Double.parseDouble(total);
+                        items.add(new ReportItem("Tổng", currency.format(val)));
+                    } catch (Exception e) {
+                        items.add(new ReportItem("Tổng", total));
+                    }
+                }
+                if (!totalRevenue.isEmpty()) {
+                    try {
+                        double val = Double.parseDouble(totalRevenue);
+                        items.add(new ReportItem("Doanh thu", currency.format(val)));
+                    } catch (Exception e) {
+                        items.add(new ReportItem("Doanh thu", totalRevenue));
+                    }
+                }
+                if (!count.isEmpty()) {
+                    items.add(new ReportItem("Số lượng", count));
+                }
+                if (!orderCount.isEmpty()) {
+                    items.add(new ReportItem("Số đơn", orderCount));
+                }
+                if (!soldQty.isEmpty()) {
+                    items.add(new ReportItem("Đã bán", soldQty + " đơn"));
+                }
+                if (!totalQty.isEmpty()) {
+                    items.add(new ReportItem("Tổng số", totalQty));
+                }
+                if (!dailyCustomers.isEmpty()) {
+                    items.add(new ReportItem("Khách hàng", dailyCustomers));
+                }
+                if (!expense.isEmpty()) {
+                    try {
+                        double val = Double.parseDouble(expense);
+                        items.add(new ReportItem("Chi phí", currency.format(val)));
+                    } catch (Exception e) {
+                        items.add(new ReportItem("Chi phí", expense));
+                    }
+                }
+            }
+
+            if (items.isEmpty()) {
+                items.add(new ReportItem("Kết quả", "Không có dữ liệu"));
+            }
+        } catch (Exception e) {
+            items.add(new ReportItem("Lỗi", "Không xử lý được dữ liệu: " + e.getMessage()));
+        }
+
+        return items;
+    }
+
+    private String getShiftLabel(int hour) {
+        if (hour >= 6 && hour <= 11)
+            return "Sáng (6-11)";
+        if (hour >= 12 && hour <= 17)
+            return "Chiều (12-17)";
+        if (hour >= 18 && hour <= 23)
+            return "Tối (18-23)";
+        return "Đêm (0-5)";
+    }
+
     private void showAddCategoryDialog() {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Thêm danh mục");
@@ -1763,11 +1982,20 @@ public class AdminDashboard extends Application {
                 if (!url.isEmpty()) {
                     HttpRequest request = HttpRequest.newBuilder(URI.create(url)).GET().build();
                     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-                    String display = extractReportDisplay(response.body());
-                    Platform.runLater(() -> reportDisplayArea.setText(display));
+                    ObservableList<ReportItem> items = parseReportData(response.body());
+                    Platform.runLater(() -> {
+                        if (reportTable != null) {
+                            reportTable.setItems(items);
+                        }
+                    });
                 }
             } catch (Exception e) {
-                Platform.runLater(() -> reportDisplayArea.setText("Lỗi: " + e.getMessage()));
+                Platform.runLater(() -> {
+                    if (reportTable != null) {
+                        reportTable.setItems(FXCollections.observableArrayList(
+                                new ReportItem("Lỗi", e.getMessage())));
+                    }
+                });
             }
         }).start();
     }
@@ -1833,8 +2061,101 @@ public class AdminDashboard extends Application {
     }
 
     private String extractReportDisplay(String body) {
-        return body;
-    } // Simplified for now
+        if (body == null || body.isEmpty()) {
+            return "Không có dữ liệu báo cáo";
+        }
+
+        try {
+            // Kiểm tra xem response có success=false không
+            if (body.contains("\"success\":false")) {
+                String errorMsg = extractJsonValue(body, "message");
+                return "Lỗi: " + (errorMsg.isEmpty() ? "Không tải được báo cáo" : errorMsg);
+            }
+
+            // Extract data array từ JSON
+            String[] items = extractDataArrayObjects(body);
+            if (items.length == 0) {
+                return "Không có dữ liệu trong khoảng thời gian này";
+            }
+
+            StringBuilder display = new StringBuilder();
+            display.append("═══════════════════════════════════════════════════════\n");
+            display.append("                        BÁO CÁO\n");
+            display.append("═══════════════════════════════════════════════════════\n\n");
+
+            // Parse từng item trong data array
+            for (int i = 0; i < items.length; i++) {
+                String item = normalizeJsonObject(items[i]);
+
+                // Thử lấy các field phổ biến
+                String date = extractJsonValue(item, "date");
+                String day = extractJsonValue(item, "day");
+                String month = extractJsonValue(item, "month");
+                String week = extractJsonValue(item, "week");
+                String shift = extractJsonValue(item, "shift");
+                String product = extractJsonValue(item, "product_name");
+                String revenue = extractJsonValue(item, "revenue");
+                String total = extractJsonValue(item, "total");
+                String count = extractJsonValue(item, "count");
+                String expense = extractJsonValue(item, "expense");
+
+                // Xây dựng dòng hiển thị tùy theo loại báo cáo
+                StringBuilder line = new StringBuilder();
+                if (!date.isEmpty()) {
+                    line.append("Ngày: ").append(date);
+                }
+                if (!day.isEmpty()) {
+                    line.append("Ngày: ").append(day);
+                }
+                if (!week.isEmpty()) {
+                    if (line.length() > 0)
+                        line.append(" | ");
+                    line.append("Tuần: ").append(week);
+                }
+                if (!shift.isEmpty()) {
+                    if (line.length() > 0)
+                        line.append(" | ");
+                    line.append("Ca: ").append(shift);
+                }
+                if (!product.isEmpty()) {
+                    if (line.length() > 0)
+                        line.append("\n");
+                    line.append("Sản phẩm: ").append(product);
+                }
+
+                // Thêm giá trị chính
+                if (!revenue.isEmpty()) {
+                    if (line.length() > 0)
+                        line.append("\n");
+                    line.append("Doanh thu: ").append(currency.format(Double.parseDouble(revenue)));
+                }
+                if (!total.isEmpty()) {
+                    if (line.length() > 0)
+                        line.append("\n");
+                    line.append("Tổng: ").append(currency.format(Double.parseDouble(total)));
+                }
+                if (!count.isEmpty()) {
+                    if (line.length() > 0)
+                        line.append("\n");
+                    line.append("Số lượng: ").append(count);
+                }
+                if (!expense.isEmpty()) {
+                    if (line.length() > 0)
+                        line.append("\n");
+                    line.append("Chi phí: ").append(currency.format(Double.parseDouble(expense)));
+                }
+
+                if (line.length() > 0) {
+                    display.append(line).append("\n");
+                    display.append("───────────────────────────────────────────────────────\n");
+                }
+            }
+
+            return display.toString();
+        } catch (Exception e) {
+            return "Lỗi xử lý báo cáo: " + e.getMessage();
+        }
+    }
 
     private String extractJsonValue(String json, String key) {
         if (json == null || json.isEmpty())
@@ -2025,6 +2346,24 @@ public class AdminDashboard extends Application {
 
         public String getUsageDisplay() {
             return usageCount + "/" + usageLimit;
+        }
+    }
+
+    public static class ReportItem {
+        private final String label;
+        private final String value;
+
+        public ReportItem(String label, String value) {
+            this.label = label;
+            this.value = value;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getValue() {
+            return value;
         }
     }
 
