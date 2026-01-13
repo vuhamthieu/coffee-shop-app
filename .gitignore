@@ -50,3 +50,12 @@ Dataset/ID_1/
 Dataset/ID_1/processed/
 Dataset/ID_1/raw/
 Dataset/ID_1/metadata.json
+# Python venv
+venv/
+
+# Java class files
+*.class
+
+# Python cache
+__pycache__/
+*.pyc
