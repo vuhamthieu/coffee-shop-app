@@ -58,4 +58,13 @@ Dataset/ID_1/
 # Dataset/ID_1/raw/
 # Dataset/ID_1/metadata.json
 # Virtual environment
-venv/
+
+# Python
+
+__pycache__/
+*.pyc
+
+# Java / JavaFX
+bin/
+*.dll
+

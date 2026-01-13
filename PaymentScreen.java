@@ -76,7 +76,7 @@ public class PaymentScreen extends Application {
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
     // URL để ghi nhận thanh toán vào backend
-    private static final String COMPLETE_PAYMENT_URL = "http://localhost/coffee-shop-app/backend/api/employee/complete-payment.php";
+    private static final String COMPLETE_PAYMENT_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/complete-payment.php";
     private static final String INVOICE_PDF_URL = "http://localhost:8080/backend/api/employee/print-invoice.php";
     // URL in tem món (labels) từ backend
     private static final String ITEM_LABELS_PDF_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/print-item-label.php";

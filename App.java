@@ -4,6 +4,12 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
@@ -96,6 +102,10 @@ public class App extends Application {
     private int currentOrderId = -1;
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
+    // Recognition process control
+    private Process recognitionProcess;
+    private final AtomicBoolean recognitionRunning = new AtomicBoolean(false);
+
     // Trạng thái bàn đồng bộ đúng với backend: empty, serving, reserved
     private final Map<String, String> statusColor = new HashMap<>() {
         {
@@ -121,6 +131,11 @@ public class App extends Application {
         root.setCenter(tabs);
 
         Scene scene = new Scene(root, 1400, 820);
+        // Apply tab/theme CSS
+        String cssUrl = createCoffeeThemeCss();
+        if (cssUrl != null) {
+            scene.getStylesheets().add(cssUrl);
+        }
         primaryStage.setTitle("Coffee Aura");
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -145,21 +160,85 @@ public class App extends Application {
         statsTab.setClosable(false);
         statsTab.setContent(buildPaymentLogPane());
 
-        TabPane tabPane = new TabPane(orderTab, tableTab, statsTab);
+        Tab checkInTab = new Tab("Check in/out");
+        checkInTab.setClosable(false);
+        checkInTab.setContent(buildCheckInPane());
+
+        // run script when tab is selected
+        checkInTab.selectedProperty().addListener((obs, oldV, newV) -> {
+            if (newV) {
+                // auto-run when user opens the tab
+                // UI pane will manage not starting multiple times
+                VBox pane = (VBox) checkInTab.getContent();
+                if (pane != null) {
+                    for (javafx.scene.Node n : pane.getChildren()) {
+                        if (n instanceof TextArea) {
+                            runRecognitionScript((TextArea) n);
+                            break;
+                        }
+                    }
+                }
+            } else {
+                // optional: we don't forcibly stop the script here
+            }
+        });
+
+        TabPane tabPane = new TabPane(orderTab, tableTab, statsTab, checkInTab);
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
         // tab: Order nâu, Table caramel, Total giống Payment; nền tabPane trùng nền app
         tabPane.setStyle("-fx-background-color:#F5F0E1;"
-                + "-fx-padding:2;"
-                + "-fx-border-color:transparent;"
-                + "-fx-tab-min-width:120;"
-                + "-fx-tab-max-width:120;"
-                + "-fx-tab-min-height:30;");
-        orderTab.setStyle("-fx-background-color:#6B4C3B; -fx-text-base-color:#F5F0E1; -fx-font-weight:bold;");
-        tableTab.setStyle("-fx-background-color:#C08A64; -fx-text-base-color:#2B2B2B; -fx-font-weight:bold;");
-        statsTab.setStyle("-fx-background-color:#6B4C3B; -fx-text-base-color:#F5F0E1; -fx-font-weight:bold;");
+            + "-fx-padding:2;"
+            + "-fx-border-color:transparent;"
+            + "-fx-tab-min-width:120;"
+            + "-fx-tab-max-width:120;"
+            + "-fx-tab-min-height:30;");
+        // Tab appearance handled by CSS file to match app theme
 
         return tabPane;
+    }
+
+    /**
+     * Create a temporary CSS file to style the TabPane to match the coffee theme
+     * (rounded tab buttons, beige background, selected highlight).
+     */
+    private String createCoffeeThemeCss() {
+        try {
+            String cssContent = "/* TabPane base */\n"
+                    + ".tab-pane { -fx-background-color: #F5F0E1; }\n"
+                    + "/* Header area */\n"
+                    + ".tab-pane > .tab-header-area { -fx-padding: 6 6 0 6; }\n"
+                    + "/* Tab style (unselected) */\n"
+                    + ".tab {\n"
+                    + "  -fx-background-color: #E6DCCA;\n"
+                    + "  -fx-background-radius: 10 10 0 0;\n"
+                    + "  -fx-border-color: #A08060;\n"
+                    + "  -fx-border-width: 1 1 0 1;\n"
+                    + "  -fx-border-radius: 10 10 0 0;\n"
+                    + "  -fx-padding: 6 14 6 14;\n"
+                    + "}\n"
+                    + "/* Tab label */\n"
+                    + ".tab .tab-label { -fx-text-fill: #6B4C3B; -fx-font-weight: bold; -fx-font-size: 13px; }\n"
+                    + "/* Hover */\n"
+                    + ".tab:hover { -fx-background-color: #F2C57C; }\n"
+                    + "/* Selected tab */\n"
+                    + ".tab:selected {\n"
+                    + "  -fx-background-color: #E8F7FF; /* light blue */\n"
+                    + "  -fx-border-color: #6B4C3B;\n"
+                    + "  -fx-border-width: 2 2 0 2;\n"
+                    + "}\n"
+                    + ".tab:selected .tab-label { -fx-text-fill: #0F4C81; -fx-font-size: 13px; }\n";
+
+            File temp = File.createTempFile("coffee_tab_theme", ".css");
+            temp.deleteOnExit();
+            try (FileWriter fw = new FileWriter(temp)) {
+                fw.write(cssContent);
+            }
+            return temp.toURI().toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private VBox buildHeader() {
@@ -381,6 +460,73 @@ public class App extends Application {
                 + "-fx-effect:dropshadow(gaussian,rgba(107,76,59,0.12),12,0,0,4);");
         VBox.setVgrow(table, Priority.ALWAYS);
         return container;
+    }
+
+    /**
+     * Build pane for Check in/out tab which can run the recognition Python script
+     */
+    private VBox buildCheckInPane() {
+        Label caption = new Label("Check in/out");
+        caption.setStyle("-fx-text-fill:#6B4C3B;-fx-font-size:18px;-fx-font-weight:bold;");
+
+        TextArea outputArea = new TextArea();
+        outputArea.setEditable(false);
+        outputArea.setWrapText(true);
+        outputArea.setPrefRowCount(20);
+        outputArea.setStyle("-fx-background-radius:12;-fx-background-color:#FFFFFF;"
+                + "-fx-border-color:rgba(107,76,59,0.08);-fx-padding:8;");
+
+        Button runBtn = createPrimaryButton("Run Check In/Out");
+        runBtn.setOnAction(e -> runRecognitionScript(outputArea));
+
+        VBox container = new VBox(10, caption, runBtn, outputArea);
+        container.setPadding(new Insets(10));
+        container.setStyle("-fx-background-color:#FFFFFF;-fx-background-radius:18;"
+                + "-fx-effect:dropshadow(gaussian,rgba(107,76,59,0.12),14,0,0,4);");
+        VBox.setVgrow(outputArea, Priority.ALWAYS);
+        return container;
+    }
+
+    /**
+     * Launch the Python recognition script and stream stdout/stderr into the provided TextArea.
+     */
+    private void runRecognitionScript(TextArea outputArea) {
+        if (recognitionRunning.get()) {
+            Platform.runLater(() -> outputArea.appendText("Recognition already running...\n"));
+            return;
+        }
+        recognitionRunning.set(true);
+        outputArea.clear();
+
+        new Thread(() -> {
+            try {
+                // Try common python executables
+                String[] cmd = new String[] {"python", "recognize_and_log.py"};
+                ProcessBuilder pb = new ProcessBuilder(cmd);
+                pb.directory(new File(System.getProperty("user.dir")));
+                pb.redirectErrorStream(true);
+                recognitionProcess = pb.start();
+
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(recognitionProcess.getInputStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        final String outLine = line;
+                        Platform.runLater(() -> outputArea.appendText(outLine + "\n"));
+                    }
+                }
+
+                int exit = recognitionProcess.waitFor();
+                Platform.runLater(() -> outputArea.appendText("\nProcess exited with code: " + exit + "\n"));
+            } catch (IOException io) {
+                Platform.runLater(() -> outputArea.appendText("Failed to start recognition script: " + io.getMessage() + "\n"));
+            } catch (InterruptedException ie) {
+                Platform.runLater(() -> outputArea.appendText("Recognition interrupted\n"));
+                Thread.currentThread().interrupt();
+            } finally {
+                recognitionRunning.set(false);
+                recognitionProcess = null;
+            }
+        }).start();
     }
 
     private VBox buildMgmtMapPanel() {
