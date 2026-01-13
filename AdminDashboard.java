@@ -70,6 +70,7 @@ public class AdminDashboard extends Application {
     private static final String IMPORT_INVENTORY_URL = BASE_URL + "inventory/import.php";
     private static final String EXPORT_INVENTORY_URL = BASE_URL + "inventory/export.php";
     private static final String GET_LOW_STOCK_ALERT_URL = BASE_URL + "inventory/get-low-stock-alert.php";
+    private static final String DELETE_INVENTORY_URL = BASE_URL + "inventory/delete_inventory.php";
 
     // Coupons
     private static final String GET_COUPONS_URL = BASE_URL + "coupons/get-list.php";
@@ -831,14 +832,18 @@ public class AdminDashboard extends Application {
         invStatusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
         inventoryTable.getColumns().addAll(invIdCol, invNameCol, invQtyCol, invUnitCol, invStatusCol);
         HBox btnBox = new HBox(10);
+        Button addInvBtn = createPrimaryButton("➕ Thêm nguyên liệu");
         Button importBtn = createPrimaryButton("📥 Nhập kho");
+        Button deleteInvBtn = createGhostButton("🗑️ Xóa");
         Button refreshInvBtn = createGhostButton("🔄 Làm mới");
+        addInvBtn.setOnAction(e -> showAddInventoryDialog());
         importBtn.setOnAction(e -> showImportDialog());
+        deleteInvBtn.setOnAction(e -> deleteInventory());
         refreshInvBtn.setOnAction(e -> {
             loadInventory();
             loadLowStockAlerts(alertLabel);
         });
-        btnBox.getChildren().addAll(importBtn, refreshInvBtn);
+        btnBox.getChildren().addAll(addInvBtn, importBtn, deleteInvBtn, refreshInvBtn);
         inventoryTab.getChildren().addAll(title, alertPanel, inventoryTable, btnBox);
         VBox.setVgrow(inventoryTable, Priority.ALWAYS);
         loadLowStockAlerts(alertLabel);
@@ -1903,6 +1908,87 @@ public class AdminDashboard extends Application {
                 e.printStackTrace();
             }
         }).start();
+    }
+
+    private void deleteInventory() {
+        InventoryModel selected = inventoryTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Cảnh báo", "Vui lòng chọn thành phần để xóa");
+            return;
+        }
+
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("Xác nhận xóa");
+        confirmAlert.setHeaderText("Xóa thành phần kho");
+        confirmAlert.setContentText("Bạn có chắc chắn muốn xóa '" + selected.getName() + "'?");
+        Optional<ButtonType> result = confirmAlert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            String jsonBody = String.format("{\"inventory_id\":%d}", selected.getId());
+            sendPostRequest(DELETE_INVENTORY_URL, jsonBody, "Xóa thành phần", this::loadInventory);
+        }
+    }
+
+    private void showAddInventoryDialog() {
+        Dialog<Pair<String, Pair<Double, String>>> dialog = new Dialog<>();
+        dialog.setTitle("Thêm nguyên liệu mới");
+        dialog.setHeaderText("Nhập thông tin nguyên liệu");
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20));
+
+        TextField nameField = new TextField();
+        nameField.setPromptText("Tên nguyên liệu");
+        TextField qtyField = new TextField();
+        qtyField.setPromptText("Số lượng");
+        TextField unitField = new TextField();
+        unitField.setPromptText("Đơn vị (ví dụ: kg, lít, cái)");
+
+        grid.add(new Label("Tên nguyên liệu:"), 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(new Label("Số lượng:"), 0, 1);
+        grid.add(qtyField, 1, 1);
+        grid.add(new Label("Đơn vị:"), 0, 2);
+        grid.add(unitField, 1, 2);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.setResultConverter(btn -> {
+            if (btn == ButtonType.OK) {
+                try {
+                    double qty = qtyField.getText() != null && !qtyField.getText().isBlank()
+                            ? Double.parseDouble(qtyField.getText())
+                            : 0;
+                    return new Pair<>(nameField.getText(), new Pair<>(qty, unitField.getText()));
+                } catch (NumberFormatException e) {
+                    showAlert("Lỗi", "Số lượng phải là số hợp lệ");
+                    return null;
+                }
+            }
+            return null;
+        });
+
+        Optional<Pair<String, Pair<Double, String>>> result = dialog.showAndWait();
+        if (result.isPresent() && result.get() != null) {
+            Pair<String, Pair<Double, String>> data = result.get();
+            String name = data.getKey();
+            double quantity = data.getValue().getKey();
+            String unit = data.getValue().getValue();
+
+            if (name.isBlank() || unit.isBlank()) {
+                showAlert("Lỗi", "Vui lòng điền đầy đủ thông tin");
+                return;
+            }
+
+            String jsonBody = String.format(Locale.US,
+                    "{\"inventory_name\":\"%s\",\"quantity\":%.0f,\"unit\":\"%s\"}",
+                    name.replace("\"", "\\\""), quantity, unit.replace("\"", "\\\""));
+
+            sendPostRequest("http://localhost/coffee-shop-app/backend/api/admin/inventory/add_inventory.php",
+                    jsonBody, "Thêm nguyên liệu", this::loadInventory);
+        }
     }
 
     private void loadCoupons() {
