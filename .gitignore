@@ -1,61 +1,59 @@
-# JavaFX Native Libraries (bin folder)
-bin/
-*.dll
+# =========================
+# Java Build / Artifacts
+# =========================
+bin/                    # JavaFX native binaries
+out/
+build/
+target/
+*.class                 # Compiled Java classes
+*.jar                   # Java libraries
 
-# Compiled Java classes
-*.class
+# =========================
+# Python
+# =========================
+venv/                   # Virtual environment
+__pycache__/
+*.pyc
+*.pyo
+*.pkl
 
+# =========================
 # IDE files
+# =========================
 .idea/
 .vscode/
 *.iml
 *.ipr
 *.iws
 
-# Python cache
-__pycache__/
-*.pyc
-*.pyo
-*.pkl
-
+# =========================
 # OS files
+# =========================
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# Logs
+# =========================
+# Logs / Temporary
+# =========================
 *.log
-
-# Temporary files
 *.tmp
 *.temp
 *.swp
 *.swo
 *~
 
-# Build artifacts
-target/
-build/
-out/
-
+# =========================
 # Environment variables
+# =========================
 .env
 .env.local
 
-*.class
-# Bỏ qua toàn bộ folder Dataset/ID_1
+# =========================
+# Dataset
+# =========================
 Dataset/ID_1/
-
-# Hoặc nếu chỉ muốn bỏ qua các file cụ thể bên trong:
-Dataset/ID_1/processed/
-Dataset/ID_1/raw/
-Dataset/ID_1/metadata.json
-# Python venv
-venv/
-
-# Java class files
-*.class
-
-# Python cache
-__pycache__/
-*.pyc
+# Nếu muốn chi tiết hơn, bỏ các file con riêng lẻ
+# Dataset/ID_1/processed/
+# Dataset/ID_1/raw/
+# Dataset/ID_1/metadata.json

@@ -76,16 +76,15 @@ public class PaymentScreen extends Application {
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
     // URL sinh PDF hoá đơn từ backend (sửa lại path cho đúng với file PHP của bạn)
-    private static final String INVOICE_PDF_URL = "http://localhost:8080/backend/api/employee/print-invoice.php";
+    private static final String INVOICE_PDF_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/print-invoice.php";
     // URL in tem món (labels) từ backend
-    private static final String ITEM_LABELS_PDF_URL = "http://localhost:8080/backend/api/employee/print-item-labels.php";
+    private static final String ITEM_LABELS_PDF_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/print-item-label.php";
     // URL apply coupon vào backend
-    private static final String APPLY_COUPON_URL = "http://localhost:8080/backend/api/employee/apply-coupon.php";
+    private static final String APPLY_COUPON_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/apply-coupon.php";
     // URL validate coupon theo order_total (validate-coupon.php trên backend)
-    private static final String VALIDATE_COUPON_URL = "http://localhost:8080/backend/api/employee/check-coupon.php";
+    private static final String VALIDATE_COUPON_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/check-coupon.php";
     // URL remove coupon from order on backend
-    private static final String REMOVE_COUPON_URL = "http://localhost:8080/backend/api/employee/remove-coupon.php";
-
+    private static final String REMOVE_COUPON_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/remove-coupon.php";
     public PaymentScreen() {
         this("Bàn demo", FXCollections.observableArrayList(
                 new InvoiceLine("Cà phê sữa đá", 2, 39000),
@@ -144,13 +143,10 @@ public class PaymentScreen extends Application {
     }
 
     private VBox buildHeader() {
-        Label title = new Label("1.2 Thanh toán");
+        Label title = new Label("Thanh toán");
         title.setStyle("-fx-text-fill:#F5F0E1;-fx-font-size:30px;-fx-font-weight:bold;");
 
-        Label subtitle = new Label("Tính tổng tiền • áp mã giảm giá • in hóa đơn • ghi nhận phương thức thanh toán");
-        subtitle.setStyle("-fx-text-fill:#F2C57C;-fx-font-size:15px;");
-
-        VBox header = new VBox(6, title, subtitle);
+        VBox header = new VBox(6, title);
         header.setPadding(new Insets(20));
         header.setStyle("-fx-background-color:#6B4C3B;-fx-background-radius:18;"
                 + "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.35),18,0,0,6);");

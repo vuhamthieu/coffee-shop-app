@@ -290,16 +290,13 @@ public class App extends Application {
         noteArea.setPrefRowCount(3);
         noteArea.setStyle(textAreaStyle());
 
-        Button noteButton = createGhostButton("Lưu ghi chú");
-        noteButton.setOnAction(e -> saveNoteForCurrentTable());
-
         totalLabel = new Label("Tổng: 0 đ");
         totalLabel.setStyle("-fx-text-fill:#6B4C3B;-fx-font-size:22px;-fx-font-weight:bold;");
 
         Button payButton = createPrimaryButton("Tính tiền");
         payButton.setOnAction(e -> handlePayment());
 
-        HBox bottomRow = new HBox(12, noteButton, totalLabel, payButton);
+        HBox bottomRow = new HBox(12, totalLabel, payButton);
         bottomRow.setAlignment(Pos.CENTER_RIGHT);
         HBox.setHgrow(totalLabel, Priority.ALWAYS);
         totalLabel.setMaxWidth(Double.MAX_VALUE);
@@ -696,18 +693,7 @@ public class App extends Application {
         totalLabel.setText("Tổng: " + currencyFormat.format(total));
     }
 
-    private void saveNoteForCurrentTable() {
-        CafeTable table = tableListView.getSelectionModel().getSelectedItem();
-        if (table == null) {
-            showWarning("Chưa chọn bàn", "Chọn bàn để lưu ghi chú.");
-            return;
-        }
-        notesByTable.put(table.getName(), noteArea.getText());
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setHeaderText("Đã lưu ghi chú cho " + table.getName());
-        alert.setContentText(noteArea.getText().isBlank() ? "Không có ghi chú." : noteArea.getText());
-        alert.showAndWait();
-    }
+
 
     private void handlePayment() {
         CafeTable table = tableListView.getSelectionModel().getSelectedItem();
