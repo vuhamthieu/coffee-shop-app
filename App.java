@@ -77,21 +77,21 @@ public class App extends Application {
 
     private final ObservableList<PaymentRecord> paymentRecords = FXCollections.observableArrayList();
     // URL API PHP (chỉnh lại cho đúng domain/path thật của bạn)
-    private static final String ADD_ORDER_ITEM_URL = "http://localhost:8080/backend/api/employee/add-order-item.php";
-    private static final String CREATE_ORDER_URL = "http://localhost:8080/backend/api/employee/create-order.php";
-    private static final String DELETE_ORDER_URL = "http://localhost:8080/backend/api/employee/delete-order.php";
-    private static final String GET_CATEGORIES_URL = "http://localhost:8080/backend/api/employee/get-categories.php";
-    private static final String GET_INVENTORY_URL = "http://localhost:8080/backend/api/employee/get-inventory.php";
-    private static final String GET_ORDER_DETAILS_URL = "http://localhost:8080/backend/api/employee/get-order.php";
-    private static final String GET_PRODUCTS_URL = "http://localhost:8080/backend/api/employee/get-products.php";
-    private static final String GET_TABLES_URL = "http://localhost:8080/backend/api/employee/get-tables.php";
-    private static final String GET_UNPAID_ORDERS_URL = "http://localhost:8080/backend/api/employee/get-unpaid-orders.php";
-    private static final String CHECKOUT_ORDER_URL = "http://localhost:8080/backend/api/employee/order-checkout.php";
-    private static final String UPDATE_ORDER_ITEM_URL = "http://localhost:8080/backend/api/employee/update-order-item.php";
-    private static final String UPDATE_INVENTORY_STATUS_URL = "http://localhost:8080/backend/api/employee/update-inventory-status.php";
-    private static final String UPDATE_PRODUCT_AVAILABLE_URL = "http://localhost:8080/backend/api/employee/update-product-available.php";
-    private static final String UPDATE_TABLE_STATUS_URL = "http://localhost:8080/backend/api/employee/update-table-status.php";
-    private static final String LOGOUT_URL = "http://localhost:8080/backend/api/employee/logout.php";
+    private static final String ADD_ORDER_ITEM_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/add-order-item.php";
+    private static final String CREATE_ORDER_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/create-order.php";
+    private static final String DELETE_ORDER_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/delete-order.php";
+    private static final String GET_CATEGORIES_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/get-categories.php";
+    private static final String GET_INVENTORY_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/get-inventory.php";
+    private static final String GET_ORDER_DETAILS_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/get-order.php";
+    private static final String GET_PRODUCTS_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/get-products.php";
+    private static final String GET_TABLES_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/get-tables.php";
+    private static final String GET_UNPAID_ORDERS_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/get-unpaid-orders.php";
+    private static final String CHECKOUT_ORDER_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/order-checkout.php";
+    private static final String UPDATE_ORDER_ITEM_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/update-order-item.php";
+    private static final String UPDATE_INVENTORY_STATUS_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/update-inventory-status.php";
+    private static final String UPDATE_PRODUCT_AVAILABLE_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/update-product-available.php";
+    private static final String UPDATE_TABLE_STATUS_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/update-table-status.php";
+    private static final String LOGOUT_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/logout.php";
     // id order hiện tại, được set sau khi gọi create-order
     private int currentOrderId = -1;
     private final HttpClient httpClient = HttpClient.newHttpClient();
@@ -821,11 +821,11 @@ public class App extends Application {
                             + notesByTable.getOrDefault(source.getName(), ""));
             notesByTable.remove(source.getName());
             sourceOrder.clear();
-            source.setStatus("Trống");
+            source.setStatus("empty");
             allTables.stream()
                     .filter(t -> t.getName().equals(targetName))
                     .findFirst()
-                    .ifPresent(t -> t.setStatus("Đang phục vụ"));
+                    .ifPresent(t -> t.setStatus("serving"));
             tableListView.refresh();
             bindOrderToTable(source);
         });
