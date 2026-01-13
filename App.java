@@ -556,7 +556,30 @@ public class App extends Application {
         mgmtSelectedTable.setReservationInfo("Chưa có đặt trước.");
         // quay lại trạng thái trống theo API
         mgmtSelectedTable.setStatus("empty");
+
+        // Clear related UI fields for reservation details
+        if (mgmtCustomerField != null) {
+            mgmtCustomerField.clear();
+        }
+        if (mgmtPhoneField != null) {
+            mgmtPhoneField.clear();
+        }
+        if (mgmtSlotCombo != null) {
+            mgmtSlotCombo.getSelectionModel().clearSelection();
+        }
+        if (mgmtNoteArea != null) {
+            mgmtNoteArea.clear();
+        }
+
         mgmtReservationLabel.setText(mgmtSelectedTable.getReservationInfo());
+
+        // If we can determine a table id, sync the 'empty' status to backend
+        int tableIndex = allTables.indexOf(mgmtSelectedTable);
+        if (tableIndex >= 0) {
+            int tableId = tableIndex + 1;
+            updateTableStatus(tableId, "empty");
+        }
+
         refreshMgmtFloorMap();
     }
 
@@ -753,6 +776,10 @@ public class App extends Application {
         // Sau khi tạo order mới, backend sẽ tự set 'serving', nhưng UI tạm thời để
         // 'empty' cho tới khi có món
         table.setStatus("empty");
+        int tableIndex = allTables.indexOf(table);
+        if (tableIndex >= 0) {
+            updateTableStatus(tableIndex + 1, "empty");
+        }
         tableListView.refresh();
         updateTotalLabel(fresh);
     }
@@ -783,6 +810,10 @@ public class App extends Application {
             }
             // Bàn nguồn sau khi chuyển order về trạng thái trống theo API
             source.setStatus("empty");
+            int srcIdx = allTables.indexOf(source);
+            if (srcIdx >= 0) {
+                updateTableStatus(srcIdx + 1, "empty");
+            }
             allTables.stream()
                     .filter(t -> t.getName().equals(targetName))
                     .findFirst()
@@ -822,6 +853,10 @@ public class App extends Application {
             notesByTable.remove(source.getName());
             sourceOrder.clear();
             source.setStatus("empty");
+            int srcIdx2 = allTables.indexOf(source);
+            if (srcIdx2 >= 0) {
+                updateTableStatus(srcIdx2 + 1, "empty");
+            }
             allTables.stream()
                     .filter(t -> t.getName().equals(targetName))
                     .findFirst()

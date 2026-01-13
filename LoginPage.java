@@ -203,13 +203,11 @@ public class LoginPage extends Application {
                                 "-fx-effect: dropshadow(gaussian, rgba(107,76,59,0.2), 8, 0, 0, 2);");
         });
         
-        // Link quên mật khẩu
-        Hyperlink forgotLink = new Hyperlink("Quên mật khẩu?");
-        forgotLink.setStyle("-fx-text-fill: " + PRIMARY_COLOR + "; " +
-                           "-fx-border-color: transparent; " +
-                           "-fx-font-size: 13;");
-        
-        card.getChildren().addAll(titleBox, usernameBox, passwordBox, loginButton, forgotLink);
+        HBox loginBtnBox = new HBox();
+        loginBtnBox.setAlignment(Pos.CENTER);
+        loginBtnBox.getChildren().add(loginButton);
+
+        card.getChildren().addAll(titleBox, usernameBox, passwordBox, loginBtnBox);
         form.getChildren().add(card);
         
         return form;
@@ -264,58 +262,15 @@ public class LoginPage extends Application {
         
         separatorBox.getChildren().addAll(leftSep, midSep, rightSep);
         
-        // Nút Check In/Out - KHÔNG CẦN ĐĂNG NHẬP
-        Button checkButton = new Button("Check In/Out");
-        
-        // Style cố định cho button
-        checkButton.setStyle("-fx-background-color: " + ACCENT_COLOR + ";" +
-                           "-fx-text-fill: " + TEXT_COLOR + ";" +
-                           "-fx-font-weight: bold;" +
-                           "-fx-font-size: 16;" +
-                           "-fx-background-radius: 10;" +
-                           "-fx-padding: 15 40 15 40;" +
-                           "-fx-cursor: hand;" +
-                           "-fx-effect: dropshadow(gaussian, rgba(242,197,124,0.3), 12, 0, 0, 4);");
-        
-        // Hover effect
-        checkButton.setOnMouseEntered(e -> {
-            checkButton.setStyle("-fx-background-color: #E6B650;" +
-                               "-fx-text-fill: " + TEXT_COLOR + ";" +
-                               "-fx-font-weight: bold;" +
-                               "-fx-font-size: 16;" +
-                               "-fx-background-radius: 10;" +
-                               "-fx-padding: 15 40 15 40;" +
-                               "-fx-cursor: hand;" +
-                               "-fx-effect: dropshadow(gaussian, rgba(230,182,80,0.4), 15, 0, 0, 5);");
-        });
-        
-        checkButton.setOnMouseExited(e -> {
-            checkButton.setStyle("-fx-background-color: " + ACCENT_COLOR + ";" +
-                               "-fx-text-fill: " + TEXT_COLOR + ";" +
-                               "-fx-font-weight: bold;" +
-                               "-fx-font-size: 16;" +
-                               "-fx-background-radius: 10;" +
-                               "-fx-padding: 15 40 15 40;" +
-                               "-fx-cursor: hand;" +
-                               "-fx-effect: dropshadow(gaussian, rgba(242,197,124,0.3), 12, 0, 0, 4);");
-        });
-        
-        // Xử lý khi click - chạy file Python (KHÔNG CẦN KIỂM TRA ĐĂNG NHẬP)
-        checkButton.setOnAction(e -> {
-            // Chạy file Python ngay lập tức
-            runPythonScript();
-            
-            // Hiển thị thông báo
-            showAlert("Thông báo", "Hệ thống AI đang chạy nhận diện khuôn mặt...");
-        });
+        // (Check In/Out button removed)
         
         // Footer note đơn giản
         Label footerNote = new Label("Coffee Beans Cafe");
         footerNote.setFont(Font.font("Segoe UI", 12));
         footerNote.setTextFill(Color.web("#8C7C6C"));
         
-        // CHỈ CÒN separator, button và footer note (ĐÃ BỎ DÒNG HƯỚNG DẪN)
-        footer.getChildren().addAll(separatorBox, checkButton, footerNote);
+        // CHỈ CÒN separator và footer note
+        footer.getChildren().addAll(separatorBox, footerNote);
         return footer;
     }
     

@@ -31,8 +31,8 @@ import java.util.Optional;
 public class AdminDashboard extends Application {
 
     // Base URL for Admin API
-    private static final String BASE_URL = "http://localhost/coffee-shop-app/backend/api/admin/";
-    private static final String BASE_EMPLOYEE_URL = "http://localhost/coffee-shop-app/backend/api/employee/";
+    private static final String BASE_URL = "http://localhost:8080/coffee-shop-app/backend/api/admin/";
+    private static final String BASE_EMPLOYEE_URL = "http://localhost:8080/coffee-shop-app/backend/api/employee/";
     // API Endpoints
     // Categories
     private static final String GET_CATEGORIES_URL = BASE_EMPLOYEE_URL + "get-categories.php";
