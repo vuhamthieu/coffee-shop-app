@@ -788,7 +788,7 @@ public class AdminDashboard extends Application {
         Button lockBtn = createGhostButton("🔒 Khóa/Mở");
         Button roleBtn = createGhostButton("⚖️ Phân quyền");
         Button faceBtn = createGhostButton("👤 FaceID");
-        Button timeBtn = createGhostButton("⏱️ Chấm công");
+        Button timeBtn = createGhostButton("⏱️ Hoạt đông");
 
         addEmpBtn.setOnAction(e -> showAddEmployeeDialog());
         editEmpBtn.setOnAction(e -> showEditEmployeeDialog());
@@ -1037,11 +1037,15 @@ public class AdminDashboard extends Application {
                 return items;
             }
 
-            // Parse các item trong data array
+            // Parse các item trong data array (gộp mỗi bản ghi thành 1 dòng)
+            double aggRevenue = 0.0;
+            double aggTotal = 0.0;
+            int aggOrders = 0;
+            int aggSold = 0;
             for (String raw : dataItems) {
                 String obj = normalizeJsonObject(raw);
 
-                // Thử lấy các field phổ biến
+                // Lấy các field phổ biến
                 String date = extractJsonValue(obj, "date");
                 String day = extractJsonValue(obj, "day");
                 String shift = extractJsonValue(obj, "shift");
@@ -1057,70 +1061,100 @@ public class AdminDashboard extends Application {
                 String dailyCustomers = extractJsonValue(obj, "daily_customers");
                 String expense = extractJsonValue(obj, "expense");
 
-                // Xây dựng label và value
-                if (!date.isEmpty()) {
-                    items.add(new ReportItem("Ngày", date));
-                }
-                if (!day.isEmpty()) {
-                    items.add(new ReportItem("Ngày", day));
-                }
-                if (!shift.isEmpty() && shift.matches("\\d+")) {
-                    String shiftLabel = getShiftLabel(Integer.parseInt(shift));
-                    items.add(new ReportItem("Ca", shiftLabel));
-                }
-                if (!shiftName.isEmpty()) {
-                    items.add(new ReportItem("Ca", shiftName));
-                }
+                // Xây dựng nhãn (label): ưu tiên tên sản phẩm; nếu không có thì dùng ngày/ca
+                String label;
                 if (!product.isEmpty()) {
-                    items.add(new ReportItem("Sản phẩm", product));
+                    label = product;
+                } else {
+                    StringBuilder l = new StringBuilder();
+                    if (!day.isEmpty())
+                        l.append(day);
+                    else if (!date.isEmpty())
+                        l.append(date);
+                    if (!shiftName.isEmpty()) {
+                        if (l.length() > 0)
+                            l.append(" · ");
+                        l.append("Ca ").append(shiftName);
+                    } else if (!shift.isEmpty() && shift.matches("\\d+")) {
+                        if (l.length() > 0)
+                            l.append(" · ");
+                        l.append(getShiftLabel(Integer.parseInt(shift)));
+                    }
+                    label = l.length() == 0 ? "Chỉ tiêu" : l.toString();
                 }
-                if (!revenue.isEmpty()) {
+
+                // Xây dựng giá trị (value): gộp các metric vào 1 dòng
+                StringBuilder value = new StringBuilder();
+                // Doanh thu
+                String rev = !revenue.isEmpty() ? revenue : totalRevenue;
+                if (rev != null && !rev.isEmpty()) {
                     try {
-                        double val = Double.parseDouble(revenue);
-                        items.add(new ReportItem("Doanh thu", currency.format(val)));
-                    } catch (Exception e) {
-                        items.add(new ReportItem("Doanh thu", revenue));
+                        double v = Double.parseDouble(rev);
+                        appendMetric(value, "Doanh thu", currency.format(v));
+                        aggRevenue += v;
+                    } catch (Exception ex) {
+                        appendMetric(value, "Doanh thu", rev);
                     }
                 }
+                // Tổng (có thể là số tiền hoặc số lượng tùy API)
                 if (!total.isEmpty()) {
                     try {
-                        double val = Double.parseDouble(total);
-                        items.add(new ReportItem("Tổng", currency.format(val)));
-                    } catch (Exception e) {
-                        items.add(new ReportItem("Tổng", total));
+                        double v = Double.parseDouble(total);
+                        appendMetric(value, "Tổng", currency.format(v));
+                        aggTotal += v;
+                    } catch (Exception ex) {
+                        appendMetric(value, "Tổng", total);
                     }
                 }
-                if (!totalRevenue.isEmpty()) {
+                if (!soldQty.isEmpty()) {
+                    appendMetric(value, "Đã bán", soldQty + " đơn");
                     try {
-                        double val = Double.parseDouble(totalRevenue);
-                        items.add(new ReportItem("Doanh thu", currency.format(val)));
-                    } catch (Exception e) {
-                        items.add(new ReportItem("Doanh thu", totalRevenue));
+                        aggSold += Integer.parseInt(soldQty.replace("\"", ""));
+                    } catch (Exception ignore) {
+                    }
+                }
+                if (!orderCount.isEmpty()) {
+                    appendMetric(value, "Số đơn", orderCount);
+                    try {
+                        aggOrders += Integer.parseInt(orderCount.replace("\"", ""));
+                    } catch (Exception ignore) {
                     }
                 }
                 if (!count.isEmpty()) {
-                    items.add(new ReportItem("Số lượng", count));
-                }
-                if (!orderCount.isEmpty()) {
-                    items.add(new ReportItem("Số đơn", orderCount));
-                }
-                if (!soldQty.isEmpty()) {
-                    items.add(new ReportItem("Đã bán", soldQty + " đơn"));
+                    appendMetric(value, "Số lượng", count);
                 }
                 if (!totalQty.isEmpty()) {
-                    items.add(new ReportItem("Tổng số", totalQty));
+                    appendMetric(value, "Tổng số", totalQty);
                 }
                 if (!dailyCustomers.isEmpty()) {
-                    items.add(new ReportItem("Khách hàng", dailyCustomers));
+                    appendMetric(value, "Khách hàng", dailyCustomers);
                 }
                 if (!expense.isEmpty()) {
                     try {
-                        double val = Double.parseDouble(expense);
-                        items.add(new ReportItem("Chi phí", currency.format(val)));
-                    } catch (Exception e) {
-                        items.add(new ReportItem("Chi phí", expense));
+                        double v = Double.parseDouble(expense);
+                        appendMetric(value, "Chi phí", currency.format(v));
+                    } catch (Exception ex) {
+                        appendMetric(value, "Chi phí", expense);
                     }
                 }
+
+                if (value.length() == 0)
+                    value.append("—");
+                items.add(new ReportItem(label, value.toString()));
+            }
+
+            // Thêm dòng tổng hợp cuối cùng nếu có dữ liệu
+            if (aggRevenue > 0 || aggTotal > 0 || aggOrders > 0 || aggSold > 0) {
+                StringBuilder totalVal = new StringBuilder();
+                if (aggRevenue > 0)
+                    appendMetric(totalVal, "Doanh thu", currency.format(aggRevenue));
+                if (aggTotal > 0)
+                    appendMetric(totalVal, "Tổng", currency.format(aggTotal));
+                if (aggOrders > 0)
+                    appendMetric(totalVal, "Số đơn", String.valueOf(aggOrders));
+                if (aggSold > 0)
+                    appendMetric(totalVal, "Đã bán", aggSold + " đơn");
+                items.add(new ReportItem("Tổng kỳ", totalVal.toString()));
             }
 
             if (items.isEmpty()) {
@@ -1131,6 +1165,14 @@ public class AdminDashboard extends Application {
         }
 
         return items;
+    }
+
+    private void appendMetric(StringBuilder sb, String key, String val) {
+        if (val == null || val.isEmpty())
+            return;
+        if (sb.length() > 0)
+            sb.append(" • ");
+        sb.append(key).append(": ").append(val);
     }
 
     private String getShiftLabel(int hour) {
